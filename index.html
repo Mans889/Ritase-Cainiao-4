@@ -409,7 +409,7 @@
         return;
       }
 
-      let assignedRole = "Driver"; // Default jika tidak terdaftar di list invitation
+      let assignedRole = "Driver"; 
       if (emailInput === OWNER_EMAIL.toLowerCase()) {
         assignedRole = "Owner";
       } else {
@@ -442,7 +442,6 @@
         return;
       }
 
-      // Cek apakah sudah ada, kalau ada update rolenya
       let existing = invitedUsersList.find(u => u.email.toLowerCase() === email);
       if (existing) {
         existing.role = role;
@@ -465,23 +464,22 @@
 
     function loadAccountSettings() {
       let email = localStorage.getItem('user_email') || OWNER_EMAIL;
-      let role = localStorage.getItem('user_role') || "Owner";
+      let role = "Driver";
 
-      // Kunci mati Owner
+      // 1. Cek apakah Owner utama
       if (email.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
         role = "Owner";
-        localStorage.setItem('user_role', "Owner");
       } else {
+        // 2. Cek database invitation lokal
         let invitedUsers = JSON.parse(localStorage.getItem('invited_users_list') || '[]');
         let found = invitedUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
         if (found) {
-          role = found.role;
-          localStorage.setItem('user_role', role);
+          role = found.role; // Bisa Staff atau Driver sesuai pendaftaran di Master Control!
         } else {
-          role = "Driver"; // Default jika tidak ditemukan di database invitation
-          localStorage.setItem('user_role', "Driver");
+          role = "Driver"; 
         }
       }
+      localStorage.setItem('user_role', role);
 
       document.getElementById('currentUserEmail').innerText = email;
       let badge = document.getElementById('userRoleBadge');
@@ -491,7 +489,6 @@
       let btnMaster = document.getElementById('btnTabMaster');
       let btnGantiAkunOwner = document.getElementById('btnGantiAkunOwner');
 
-      // TOMBOL GANTI AKUN HANYA MUNCUL JIKA OWNER
       if (role === "Owner") {
         badge.className = "text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold";
         if(btnDb) btnDb.style.display = "flex";
@@ -501,13 +498,13 @@
         badge.className = "text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-bold";
         if(btnDb) btnDb.style.display = "flex";
         if(btnMaster) btnMaster.style.display = "none";
-        if(btnGantiAkunOwner) btnGantiAkunOwner.style.display = "none"; // Disembunyikan untuk Staff
+        if(btnGantiAkunOwner) btnGantiAkunOwner.style.display = "none"; 
       } else {
         // Driver
         badge.className = "text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold";
         if(btnDb) btnDb.style.display = "none";
         if(btnMaster) btnMaster.style.display = "none";
-        if(btnGantiAkunOwner) btnGantiAkunOwner.style.display = "none"; // Disembunyikan untuk Driver
+        if(btnGantiAkunOwner) btnGantiAkunOwner.style.display = "none"; 
         
         let currentTabMaster = document.getElementById('tabMaster');
         let currentTabDb = document.getElementById('tabDb');
@@ -584,7 +581,6 @@
       document.getElementById('loadingMasterList').innerHTML = loadingLocations.map((l, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${l}</span><button onclick="removeItem('loading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
       document.getElementById('unloadingMasterList').innerHTML = unloadingLocations.map((u, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${u}</span><button onclick="removeItem('unloading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
 
-      // Render List Invited Users di Master Control
       let invitedContainer = document.getElementById('invitedUserMasterList');
       if (invitedContainer) {
         if (invitedUsersList.length === 0) {
