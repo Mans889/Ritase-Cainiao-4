@@ -559,7 +559,6 @@
         return;
       }
 
-      // Animasi tombol pas dipencet
       const submitBtn = document.getElementById('submitBtn');
       const originalBtnText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengirim ke GSheet & Drive... Tunggu Sebentar!';
@@ -578,6 +577,7 @@
       const currentTime = document.getElementById('waktuOtomatis').value;
       const jobOrderVal = document.getElementById('jobOrder').value.trim() || 'JO-';
 
+      // PERBAIKAN: Gunakan data lama yang sudah ada di memori web supaya tidak tertimpa kosong
       let payload = {
         tanggal: formattedDate,
         driver: document.getElementById('driver').value,
@@ -586,23 +586,30 @@
         vehicle: selectedVehicle,
         tipeUnit: document.getElementById('tipeUnit').value,
         rit: currentActiveRit,
-        loadingLocation: document.getElementById('loadingLocation').value,
-        unloadingLocation: document.getElementById('unloadingLocation').value,
-        jobOrder: jobOrderVal,
-        remarks: document.getElementById('remarks').value || '',
-        arrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", fotoArrivalMuat: "",
-        startLoad: existingRecord ? existingRecord.startLoad : "", fotoStartLoad: "",
-        finishLoad: existingRecord ? existingRecord.finishLoad : "", fotoFinishLoad: "",
-        arrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", fotoArrivalBongkar: "",
-        startUnload: existingRecord ? existingRecord.startUnload : "", fotoStartUnload: "",
-        finishUnload: existingRecord ? existingRecord.finishUnload : "", fotoFinishUnload: ""
+        loadingLocation: document.getElementById('loadingLocation').value || (existingRecord ? existingRecord.loadingLocation : ""),
+        unloadingLocation: document.getElementById('unloadingLocation').value || (existingRecord ? existingRecord.unloadingLocation : ""),
+        jobOrder: jobOrderVal !== 'JO-' ? jobOrderVal : (existingRecord ? existingRecord.jobOrder : "JO-"),
+        remarks: document.getElementById('remarks').value || (existingRecord ? existingRecord.remarks : ""),
+        
+        arrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", 
+        fotoArrivalMuat: existingRecord ? existingRecord.fotoArrivalMuat : "",
+        startLoad: existingRecord ? existingRecord.startLoad : "", 
+        fotoStartLoad: existingRecord ? existingRecord.fotoStartLoad : "",
+        finishLoad: existingRecord ? existingRecord.finishLoad : "", 
+        fotoFinishLoad: existingRecord ? existingRecord.fotoFinishLoad : "",
+        arrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", 
+        fotoArrivalBongkar: existingRecord ? existingRecord.fotoArrivalBongkar : "",
+        startUnload: existingRecord ? existingRecord.startUnload : "", 
+        fotoStartUnload: existingRecord ? existingRecord.fotoStartUnload : "",
+        finishUnload: existingRecord ? existingRecord.finishUnload : "", 
+        fotoFinishUnload: existingRecord ? existingRecord.fotoFinishUnload : ""
       };
 
+      // Set tahap aktif yang baru dikirim
       payload[tahapVal] = currentTime;
       payload['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = capturedPhotoData;
 
       try {
-        // PERUBAHAN UTAMA: Header text/plain ini trik jitu nembus blokir browser ke Google Script
         let response = await fetch(GSHEET_API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -612,22 +619,14 @@
         let result = await response.json();
         
         if (result.status === "success" && result.urls) {
-          // Begitu sukses, ambil link Google Drive aslinya buat nimpa Base64 di lokal
           let realDriveUrl = result.urls[tahapVal];
+          if (realDriveUrl) {
+            payload['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = realDriveUrl;
+          }
 
           if (existingRecord) {
-            existingRecord.driver = payload.driver;
-            existingRecord.coDriver = payload.coDriver;
-            existingRecord.kategori = payload.kategori;
-            existingRecord.tipeUnit = payload.tipeUnit;
-            existingRecord.loadingLocation = payload.loadingLocation;
-            existingRecord.unloadingLocation = payload.unloadingLocation;
-            existingRecord[tahapVal] = currentTime;
-            existingRecord['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = realDriveUrl;
-            if(jobOrderVal !== 'JO-') existingRecord.jobOrder = jobOrderVal;
-            existingRecord.remarks = payload.remarks || existingRecord.remarks;
+            Object.assign(existingRecord, payload);
           } else {
-            payload['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = realDriveUrl;
             payload.id = Date.now();
             databaseData.unshift(payload);
           }
@@ -640,10 +639,9 @@
         }
       } catch (e) {
         console.error(e);
-        alert("Gagal koneksi ke Google Script! Pastikan internet lancar dan tunggu beberapa saat.");
+        alert("Gagal koneksi ke Google Script! Pastikan internet lancar.");
       }
 
-      // Balikin tombol kayak semula
       submitBtn.innerHTML = originalBtnText;
       submitBtn.disabled = false;
       submitBtn.classList.remove('bg-slate-600');
