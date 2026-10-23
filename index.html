@@ -377,6 +377,39 @@
       document.getElementById('tanggalBekerja').value = `${yyyy}-${mm}-${dd}`;
     }
 
+    // Fungsi pembersih format tanggal agar rapi (DD-MM-YYYY)
+    function cleanDateDisplay(rawDate) {
+      if (!rawDate) return '-';
+      try {
+        let d = new Date(rawDate);
+        if (!isNaN(d.getTime()) && String(rawDate).includes('GMT')) {
+          let day = String(d.getDate()).padStart(2, '0');
+          let month = String(d.getMonth() + 1).padStart(2, '0');
+          let year = d.getFullYear();
+          return `${day}-${month}-${year}`;
+        }
+      } catch(e) {}
+      return String(rawDate).trim();
+    }
+
+    // Fungsi pembersih format waktu agar cukup jam:menit:detik saja
+    function cleanTimeDisplay(rawTime) {
+      if (!rawTime) return '';
+      let timeStr = String(rawTime).trim();
+      if (timeStr.includes('GMT') || timeStr.includes('Sat') || timeStr.includes('Sun') || timeStr.includes('Mon') || timeStr.includes('Tue') || timeStr.includes('Wed') || timeStr.includes('Thu') || timeStr.includes('Fri')) {
+        try {
+          let d = new Date(rawTime);
+          if (!isNaN(d.getTime())) {
+            let h = String(d.getHours()).padStart(2, '0');
+            let m = String(d.getMinutes()).padStart(2, '0');
+            let s = String(d.getSeconds()).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+          }
+        } catch(e) {}
+      }
+      return timeStr;
+    }
+
     function renderAppUI() {
       document.getElementById('driver').innerHTML = '<option value="">-- Pilih Driver --</option>' + driverList.map(d => `<option value="${d}">${d}</option>`).join('');
       document.getElementById('coDriver').innerHTML = '<option value="">-- Pilih Co-Driver --</option>' + coDriverList.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -393,7 +426,6 @@
       document.getElementById('unloadingMasterList').innerHTML = unloadingLocations.map((u, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${u}</span><button onclick="removeItem('unloading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
     }
 
-    // Fungsi tarik data tanpa alert pop-up dan memunculkan centang hijau
     async function fetchDataFromGSheet() {
       try {
         let res = await fetch(GSHEET_API_URL + "?action=getdata");
@@ -404,7 +436,6 @@
           renderDatabaseTable();
           onVehicleOrDateChange();
           
-          // Munculkan tanda centang sukses di sebelah tombol Syncronize
           let checkIcon = document.getElementById('syncCheck');
           if (checkIcon) {
             checkIcon.classList.remove('hidden');
@@ -429,15 +460,13 @@
       const parts = rawDate.split('-');
       const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
 
-      // Ambil semua record untuk tanggal dan plat tersebut (lintas rit)
-      const records = databaseData.filter(i => i.tanggal === formattedDate && i.vehicle === selectedVehicle);
+      const records = databaseData.filter(i => cleanDateDisplay(i.tanggal) === formattedDate && i.vehicle === selectedVehicle);
 
       let maxRit = 1;
       records.forEach(r => { if(Number(r.rit) > maxRit) maxRit = Number(r.rit); });
 
       let currentRecord = records.find(r => Number(r.rit) === maxRit);
 
-      // Cek apakah rit saat ini sudah menyelesaikan tahapan terakhir (finishUnload)
       if (currentRecord && currentRecord.finishUnload && currentRecord.finishUnload !== "") {
         maxRit += 1;
         currentRecord = null;
@@ -466,7 +495,6 @@
       allStages.forEach(stage => {
         let isDone = record && record[stage.val] && record[stage.val] !== "";
         if (isDone) {
-          // Warna hitam / disabled agar konsisten di HP & Laptop
           html += `<option value="${stage.val}" disabled class="text-slate-500 bg-slate-950 font-normal">✔ ${stage.label} (Sudah Selesai)</option>`;
         } else {
           let selectedAttr = !firstAvailableSet ? 'selected' : '';
@@ -480,7 +508,7 @@
 
     setDefaultDate();
     renderAppUI();
-    fetchDataFromGSheet(); // Tarik data otomatis di background saat dibuka
+    fetchDataFromGSheet();
 
     function addNewMasterItem(type) {
       let val = '';
@@ -607,7 +635,7 @@
       const tahapVal = document.getElementById('tahap').value;
       const selectedVehicle = document.getElementById('vehicle').value;
 
-      let existingRecord = databaseData.find(item => item.tanggal === formattedDate && item.vehicle === selectedVehicle && Number(item.rit) === Number(currentActiveRit));
+      let existingRecord = databaseData.find(item => cleanDateDisplay(item.tanggal) === formattedDate && item.vehicle === selectedVehicle && Number(item.rit) === Number(currentActiveRit));
 
       const currentTime = document.getElementById('waktuOtomatis').value;
       const jobOrderVal = document.getElementById('jobOrder').value.trim() || 'JO-';
@@ -669,7 +697,7 @@
       if (existingRecord) {
         Object.assign(existingRecord, payload);
       } else {
-        payload.id = Date.now();
+        payload.id = 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         databaseData.unshift(payload);
       }
 
@@ -695,7 +723,7 @@
 
     function deleteRecord(id) {
       if (confirm("Hapus baris data ini?")) {
-        databaseData = databaseData.filter(item => item.id !== id);
+        databaseData = databaseData.filter(item => item.id !== id && String(item.id) !== String(id));
         localStorage.setItem('ritase_database', JSON.stringify(databaseData));
         renderDatabaseTable();
         onVehicleOrDateChange();
@@ -708,21 +736,26 @@
       const searchQuery = document.getElementById('searchInput').value.toLowerCase();
       tbody.innerHTML = '';
 
-      const filtered = databaseData.filter(i => 
-        (i.tanggal && i.tanggal.toLowerCase().includes(searchQuery)) || 
-        (i.kategori && i.kategori.toLowerCase().includes(searchQuery)) || 
-        (i.vehicle && i.vehicle.toLowerCase().includes(searchQuery)) || 
-        (i.jobOrder && i.jobOrder.toLowerCase().includes(searchQuery)) ||
-        (i.driver && i.driver.toLowerCase().includes(searchQuery))
-      );
+      const filtered = databaseData.filter(i => {
+        let tglClean = cleanDateDisplay(i.tanggal).toLowerCase();
+        let katClean = (i.kategori || '').toLowerCase();
+        let vehClean = (i.vehicle || '').toLowerCase();
+        let joClean = (i.jobOrder || '').toLowerCase();
+        let drvClean = (i.driver || '').toLowerCase();
+        return tglClean.includes(searchQuery) || katClean.includes(searchQuery) || vehClean.includes(searchQuery) || joClean.includes(searchQuery) || drvClean.includes(searchQuery);
+      });
 
       if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="17" class="p-4 text-center text-slate-400">Belum ada data tersimpan. Silakan klik tombol "Syncronize".</td></tr>';
         return;
       }
 
-      filtered.forEach(item => {
+      filtered.forEach((item, index) => {
+        let uniqueId = item.id || ('idx_' + index);
+        item.id = uniqueId;
+
         const cellInput = (val, foto) => {
+          let timeFormatted = cleanTimeDisplay(val);
           let displayLink = foto;
           if (foto && foto.startsWith("data:image")) {
             displayLink = foto;
@@ -730,16 +763,18 @@
           return `
             <td class="p-2.5 whitespace-nowrap">
               <div class="flex items-center space-x-1.5">
-                <span class="font-mono text-[11px] text-white">${val || '-'}</span>
+                <span class="font-mono text-[11px] text-white">${timeFormatted || '-'}</span>
                 ${foto ? `<a href="${displayLink}" target="_blank" class="text-blue-400 hover:text-blue-300 text-[10px] underline font-bold" title="Buka Foto"><i class="fa-solid fa-camera"></i> View</a>` : '<span class="text-slate-600 text-[10px]">-</span>'}
               </div>
             </td>
           `;
         };
 
+        let tglFormatted = cleanDateDisplay(item.tanggal);
+
         tbody.innerHTML += `
           <tr class="hover:bg-slate-750">
-            <td class="p-3 font-mono text-blue-300 font-bold">${item.tanggal || '-'}</td>
+            <td class="p-3 font-mono text-blue-300 font-bold">${tglFormatted}</td>
             <td class="p-3"><span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded text-[10px]">${item.kategori || '-'}</span></td>
             <td class="p-3 font-semibold text-blue-400">${item.vehicle || '-'}</td>
             <td class="p-3 text-center"><span class="bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded text-[10px]">${item.tipeUnit || '-'}</span></td>
@@ -756,7 +791,7 @@
             <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
             <td class="p-3 text-center">
-              <button onclick="deleteRecord(${item.id})" class="bg-red-600 hover:bg-red-500 text-white font-bold w-6 h-6 rounded-lg flex items-center justify-center mx-auto transition" title="Hapus Baris"><i class="fa-solid fa-xmark text-xs"></i></button>
+              <button onclick="deleteRecord('${uniqueId}')" class="bg-red-600 hover:bg-red-500 text-white font-bold w-6 h-6 rounded-lg flex items-center justify-center mx-auto transition cursor-pointer shadow" title="Hapus Baris"><i class="fa-solid fa-xmark text-xs"></i></button>
             </td>
           </tr>`;
       });
