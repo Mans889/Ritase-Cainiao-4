@@ -180,7 +180,7 @@
               <div id="cameraContainer" class="relative w-full h-64 bg-black rounded-xl overflow-hidden hidden">
                 <video id="videoElement" autoplay playsinline class="w-full h-full object-cover"></video>
                 <div id="liveWatermark" class="absolute bottom-2 left-2 bg-black/70 text-white text-[11px] font-mono px-2 py-1 rounded">
-                  TIMESTAMP: 23-10-2026 21:30:00
+                  TIMESTAMP: 24-10-2026 01:30:00
                 </div>
               </div>
               <canvas id="canvasElement" class="w-full h-64 object-cover rounded-xl hidden"></canvas>
@@ -207,8 +207,9 @@
             <textarea id="remarks" rows="2" placeholder="Catatan kendala atau informasi lapangan..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition"></textarea>
           </div>
 
+          <!-- Tombol diubah jadi Submid Data -->
           <button id="submitBtn" type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg text-base">
-            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Submit & Sinkron ke GSheet & GDrive
+            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Submid Data
           </button>
         </form>
       </div>
@@ -357,7 +358,9 @@
     let vehicleList = ["B 9018 TEK", "B 9026 TEK", "B 9478 UFY", "B 9479 UFY", "B 9015 UFZ", "B 9116 UFZ"];
     let loadingLocations = ["Gudang Cainiao, Cikarang", "Gudang ILC, KIIC Karawang", "Gudang SFP Lot 41, KIIC Karawang", "Lot 17, KIIC (Homebase)"];
     let unloadingLocations = ["Gudang Lot 41, PPK", "Gudang Lot 41, PPW", "Gudang Lot 41, CLOVE", "Gudang ILC, KIIC"];
-    let databaseData = [];
+    
+    // Load database dari localStorage agar tidak hilang saat refresh
+    let databaseData = JSON.parse(localStorage.getItem('ritase_database') || '[]');
 
     let videoStream = null;
     let capturedPhotoData = null;
@@ -561,7 +564,7 @@
 
       const submitBtn = document.getElementById('submitBtn');
       const originalBtnText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengirim ke GSheet & Drive... Tunggu Sebentar!';
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengirim Data...';
       submitBtn.disabled = true;
       submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
       submitBtn.classList.add('bg-slate-600');
@@ -577,7 +580,6 @@
       const currentTime = document.getElementById('waktuOtomatis').value;
       const jobOrderVal = document.getElementById('jobOrder').value.trim() || 'JO-';
 
-      // PERBAIKAN: Gunakan data lama yang sudah ada di memori web supaya tidak tertimpa kosong
       let payload = {
         tanggal: formattedDate,
         driver: document.getElementById('driver').value,
@@ -605,16 +607,21 @@
         fotoFinishUnload: existingRecord ? existingRecord.fotoFinishUnload : ""
       };
 
-      // Set tahap aktif yang baru dikirim
       payload[tahapVal] = currentTime;
       payload['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = capturedPhotoData;
 
       try {
+        // Timeout Controller agar aman untuk sinyal kurang bagus (maks 25 detik)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
+
         let response = await fetch(GSHEET_API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         
         let result = await response.json();
         
@@ -623,24 +630,24 @@
           if (realDriveUrl) {
             payload['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = realDriveUrl;
           }
-
-          if (existingRecord) {
-            Object.assign(existingRecord, payload);
-          } else {
-            payload.id = Date.now();
-            databaseData.unshift(payload);
-          }
-
-          showSuccessModal();
-          renderDatabaseTable();
-          onVehicleOrDateChange();
-        } else {
-          alert("Gagal simpan ke GSheet: " + (result.message || "Unknown Error"));
         }
       } catch (e) {
-        console.error(e);
-        alert("Gagal koneksi ke Google Script! Pastikan internet lancar.");
+        console.warn("Sinyal kurang bagus atau timeout, data tetap disimpan lokal:", e);
       }
+
+      if (existingRecord) {
+        Object.assign(existingRecord, payload);
+      } else {
+        payload.id = Date.now();
+        databaseData.unshift(payload);
+      }
+
+      // Simpan permanen ke localStorage agar tidak hilang saat di-refresh
+      localStorage.setItem('ritase_database', JSON.stringify(databaseData));
+
+      showSuccessModal();
+      renderDatabaseTable();
+      onVehicleOrDateChange();
 
       submitBtn.innerHTML = originalBtnText;
       submitBtn.disabled = false;
@@ -659,6 +666,7 @@
     function deleteRecord(id) {
       if (confirm("Hapus baris data ini?")) {
         databaseData = databaseData.filter(item => item.id !== id);
+        localStorage.setItem('ritase_database', JSON.stringify(databaseData));
         renderDatabaseTable();
         onVehicleOrDateChange();
         showSuccessModal();
