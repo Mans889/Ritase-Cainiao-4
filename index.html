@@ -29,20 +29,21 @@
     </div>
   </div>
 
-  <!-- Modal Ganti Akun / Role -->
+  <!-- Modal Ganti Akun / Role & Invitation Editor -->
   <div id="accountModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl space-y-4">
-      <h3 class="text-base font-bold text-white flex items-center"><i class="fa-solid fa-user-gear mr-2 text-blue-400"></i> Pengaturan Akun & Akses</h3>
+      <h3 class="text-base font-bold text-white flex items-center"><i class="fa-solid fa-user-gear mr-2 text-blue-400"></i> Pengaturan Akun & Akses (Invitation)</h3>
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Pengguna</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Pengguna / Editor</label>
           <input type="email" id="inputEmailUser" placeholder="nama@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Hak Akses Role</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Pilih Hak Akses Role</label>
           <select id="inputRoleUser" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            <option value="Full Access (Owner)">Full Access (Owner)</option>
-            <option value="Half Access (Driver/Staff)">Half Access (Driver/Staff)</option>
+            <option value="Owner">Owner (Full Akses: Form, Database, Hapus, Master Control)</option>
+            <option value="Staff">Staff (Form, Database, Edit JO Saja)</option>
+            <option value="Driver">Driver (Form Input Saja)</option>
           </select>
         </div>
       </div>
@@ -93,10 +94,10 @@
           <div>
             <p class="text-xs text-slate-400">Akun Login Aktif:</p>
             <p id="currentUserEmail" class="text-sm font-semibold text-white">firmangustiadi08@gmail.com</p>
-            <span id="userRoleBadge" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Full Access (Owner)</span>
+            <span id="userRoleBadge" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Owner</span>
           </div>
         </div>
-        <button onclick="openAccountModal()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-slate-300 transition">Ganti Akun</button>
+        <button onclick="openAccountModal()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-slate-300 transition">Pengaturan Akun</button>
       </div>
 
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 sm:p-8 shadow-xl space-y-6">
@@ -277,7 +278,7 @@
                 <th class="p-3 whitespace-nowrap">Job Order (Edit)</th>
                 <th class="p-3 whitespace-nowrap">Driver</th>
                 <th class="p-3 whitespace-nowrap">Co-Driver</th>
-                <th class="p-3 whitespace-nowrap text-center">Aksi (Hapus)</th>
+                <th id="thActionHeader" class="p-3 whitespace-nowrap text-center">Aksi (Hapus)</th>
               </tr>
             </thead>
             <tbody id="dbTableBody" class="divide-y divide-slate-700 text-slate-200"></tbody>
@@ -286,7 +287,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: MASTER CONTROL -->
+    <!-- TAB 3: MASTER CONTROL (Hanya Owner) -->
     <div id="tabMaster" class="space-y-6 hidden max-w-6xl mx-auto">
       <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-6 shadow-xl">
         <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -382,7 +383,7 @@
 
     function openAccountModal() {
       document.getElementById('inputEmailUser').value = localStorage.getItem('user_email') || "firmangustiadi08@gmail.com";
-      document.getElementById('inputRoleUser').value = localStorage.getItem('user_role') || "Full Access (Owner)";
+      document.getElementById('inputRoleUser').value = localStorage.getItem('user_role') || "Owner";
       document.getElementById('accountModal').classList.remove('hidden');
     }
 
@@ -402,14 +403,34 @@
 
     function loadAccountSettings() {
       let email = localStorage.getItem('user_email') || "firmangustiadi08@gmail.com";
-      let role = localStorage.getItem('user_role') || "Full Access (Owner)";
+      let role = localStorage.getItem('user_role'] || "Owner";
       document.getElementById('currentUserEmail').innerText = email;
       let badge = document.getElementById('userRoleBadge');
       badge.innerText = role;
-      if(role.includes("Full")) {
+
+      let btnDb = document.getElementById('btnTabDb');
+      let btnMaster = document.getElementById('btnTabMaster');
+
+      if (role === "Owner") {
         badge.className = "text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold";
-      } else {
+        if(btnDb) btnDb.style.display = "flex";
+        if(btnMaster) btnMaster.style.display = "flex";
+      } else if (role === "Staff") {
         badge.className = "text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-bold";
+        if(btnDb) btnDb.style.display = "flex"; // Staff bisa akses database & edit JO
+        if(btnMaster) btnMaster.style.display = "none"; // Staff tidak bisa akses master control
+      } else {
+        // Driver (atau default jika belum diatur)
+        badge.className = "text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold";
+        if(btnDb) btnDb.style.display = "none"; // Driver tidak bisa lihat database
+        if(btnMaster) btnMaster.style.display = "none"; // Driver tidak bisa master control
+        
+        // Jika sedang di tab selain form, paksa pindah ke form
+        let currentTabMaster = document.getElementById('tabMaster');
+        let currentTabDb = document.getElementById('tabDb');
+        if((currentTabMaster && !currentTabMaster.classList.contains('hidden')) || (currentTabDb && !currentTabDb.classList.contains('hidden'))) {
+          switchTab('form');
+        }
       }
     }
 
@@ -482,6 +503,9 @@
     }
 
     async function fetchDataFromGSheet() {
+      let role = localStorage.getItem('user_role') || "Owner";
+      if (role === "Driver") return;
+
       try {
         let res = await fetch(GSHEET_API_URL + "?action=getdata");
         let json = await res.json();
@@ -567,6 +591,11 @@
     fetchDataFromGSheet();
 
     function addNewMasterItem(type) {
+      let role = localStorage.getItem('user_role') || "Owner";
+      if(role !== "Owner") {
+        alert("Akses ditolak! Menu ini khusus Owner.");
+        return;
+      }
       let val = '';
       if(type === 'driver') { val = document.getElementById('newDriverInput').value.trim(); if(val) driverList.push(val); document.getElementById('newDriverInput').value = ''; }
       if(type === 'coDriver') { val = document.getElementById('newCoDriverInput').value.trim(); if(val) coDriverList.push(val); document.getElementById('newCoDriverInput').value = ''; }
@@ -579,6 +608,8 @@
     }
 
     function removeItem(type, idx) {
+      let role = localStorage.getItem('user_role') || "Owner";
+      if(role !== "Owner") return;
       if(type === 'driver') driverList.splice(idx, 1);
       if(type === 'coDriver') coDriverList.splice(idx, 1);
       if(type === 'kategori') kategoriHeaderList.splice(idx, 1);
@@ -601,13 +632,25 @@
     }, 1000);
 
     function switchTab(tab) {
+      let role = localStorage.getItem('user_role') || "Owner";
+      if(tab === 'db' && role === "Driver") {
+        alert("Akses ditolak! Driver hanya dapat mengakses Form Input.");
+        return;
+      }
+      if(tab === 'master' && role !== "Owner") {
+        alert("Akses Master Control hanya untuk Owner!");
+        return;
+      }
+
       ['tabForm', 'tabDb', 'tabMaster'].forEach(t => document.getElementById(t).classList.add('hidden'));
       ['btnTabForm', 'btnTabDb', 'btnTabMaster'].forEach(b => {
-        document.getElementById(b).className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center";
+        let el = document.getElementById(b);
+        if(el) el.className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center";
       });
 
       document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
-      document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center";
+      let activeBtn = document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+      if(activeBtn) activeBtn.className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center";
 
       if (tab === 'db') {
         fetchDataFromGSheet();
@@ -777,14 +820,12 @@
       onVehicleOrDateChange();
     }
 
-    // Fungsi update Job Order langsung dari tabel (Inline Edit)
     async function updateJobOrder(id, newJoVal) {
       let record = databaseData.find(item => item.id === id || String(item.id) === String(id));
       if (record) {
         record.jobOrder = newJoVal.trim() || 'JO-';
         localStorage.setItem('ritase_database', JSON.stringify(databaseData));
 
-        // Kirim update ke backend GSheet agar sinkron
         try {
           await fetch(GSHEET_API_URL, {
             method: "POST",
@@ -799,6 +840,11 @@
     }
 
     function deleteRecord(id) {
+      let role = localStorage.getItem('user_role') || "Owner";
+      if(role !== "Owner") {
+        alert("Akses ditolak! Hanya Owner yang dapat menghapus baris.");
+        return;
+      }
       if (confirm("Hapus baris data ini?")) {
         databaseData = databaseData.filter(item => item.id !== id && String(item.id) !== String(id));
         localStorage.setItem('ritase_database', JSON.stringify(databaseData));
@@ -811,6 +857,12 @@
     function renderDatabaseTable() {
       const tbody = document.getElementById('dbTableBody');
       const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      const role = localStorage.getItem('user_role') || "Owner";
+      const isOwner = (role === "Owner");
+
+      let thAction = document.getElementById('thActionHeader');
+      if(thAction) thAction.style.display = isOwner ? "" : "none";
+
       tbody.innerHTML = '';
 
       const filtered = databaseData.filter(i => {
@@ -849,6 +901,12 @@
 
         let tglFormatted = cleanDateDisplay(item.tanggal);
 
+        let actionCell = isOwner ? `
+          <td class="p-3 text-center">
+            <button onclick="deleteRecord('${uniqueId}')" class="bg-red-600 hover:bg-red-500 text-white font-bold w-6 h-6 rounded-lg flex items-center justify-center mx-auto transition cursor-pointer shadow" title="Hapus Baris"><i class="fa-solid fa-xmark text-xs"></i></button>
+          </td>
+        ` : '';
+
         tbody.innerHTML += `
           <tr class="hover:bg-slate-750">
             <td class="p-3 font-mono text-blue-300 font-bold">${tglFormatted}</td>
@@ -869,9 +927,7 @@
             </td>
             <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
-            <td class="p-3 text-center">
-              <button onclick="deleteRecord('${uniqueId}')" class="bg-red-600 hover:bg-red-500 text-white font-bold w-6 h-6 rounded-lg flex items-center justify-center mx-auto transition cursor-pointer shadow" title="Hapus Baris"><i class="fa-solid fa-xmark text-xs"></i></button>
-            </td>
+            ${actionCell}
           </tr>`;
       });
     }
