@@ -474,7 +474,6 @@
       let emailInput = document.getElementById('loginEmailInput').value.trim().toLowerCase();
       if (!emailInput) return;
 
-      // Pastikan ambil data terbaru dulu sebelum validasi login
       await fetchUsersFromGSheet();
 
       let assignedRole = "Driver";
@@ -525,7 +524,7 @@
       }
 
       localStorage.setItem('invited_users_list', JSON.stringify(invitedUsersList));
-      await syncUsersToGSheet(); // Sinkron ke GSheet
+      await syncUsersToGSheet();
 
       document.getElementById('inviteEmailInput').value = '';
       renderAppUI();
@@ -535,7 +534,7 @@
     async function removeInvitedUser(index) {
       invitedUsersList.splice(index, 1);
       localStorage.setItem('invited_users_list', JSON.stringify(invitedUsersList));
-      await syncUsersToGSheet(); // Sinkron ke GSheet
+      await syncUsersToGSheet();
 
       renderAppUI();
       showSuccessModal("Akun berhasil dihapus.");
@@ -754,7 +753,6 @@
       tahapSelect.innerHTML = html;
     }
 
-    // Eksekusi Awal Saat Load Page
     setDefaultDate();
     fetchUsersFromGSheet().then(() => {
       checkAuthSession();
@@ -992,6 +990,7 @@
       onVehicleOrDateChange();
     }
 
+    // UPDATE JOB ORDER (TANPA MEMBUAT ROW BARU)
     async function updateJobOrder(id, newJoVal) {
       let record = databaseData.find(item => item.id === id || String(item.id) === String(id));
       if (record) {
@@ -999,10 +998,18 @@
         localStorage.setItem('ritase_database', JSON.stringify(databaseData));
 
         try {
+          // Kirim payload lengkap dengan identifier baris/tanggal/rit/plat agar di GSheet di-update barisnya
           await fetch(GSHEET_API_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(record)
+            body: JSON.stringify({
+              action: "updateJO",
+              id: record.id,
+              tanggal: record.tanggal,
+              vehicle: record.vehicle,
+              rit: record.rit,
+              jobOrder: record.jobOrder
+            })
           });
         } catch(err) {
           console.warn("Gagal update JO ke GSheet:", err);
