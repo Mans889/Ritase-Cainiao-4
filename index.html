@@ -224,7 +224,7 @@
           </h3>
           <div class="flex items-center space-x-2 w-full sm:w-auto">
             <button onclick="fetchDataFromGSheet()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow">
-              <i class="fa-solid fa-rotate mr-1.5"></i> Sinkron dari GSheet
+              <i class="fa-solid fa-rotate mr-1.5"></i> Syncronize <span id="syncCheck" class="ml-1.5 hidden text-emerald-200"><i class="fa-solid fa-check"></i></span>
             </button>
             <div class="relative w-full sm:w-64">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-calendar-days text-xs"></i></span>
@@ -393,7 +393,7 @@
       document.getElementById('unloadingMasterList').innerHTML = unloadingLocations.map((u, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${u}</span><button onclick="removeItem('unloading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
     }
 
-    // Fungsi otomatis tarik data terbaru dari Google Sheet agar antar HP & Laptop sinkron
+    // Fungsi tarik data tanpa alert pop-up dan memunculkan centang hijau
     async function fetchDataFromGSheet() {
       try {
         let res = await fetch(GSHEET_API_URL + "?action=getdata");
@@ -403,7 +403,13 @@
           localStorage.setItem('ritase_database', JSON.stringify(databaseData));
           renderDatabaseTable();
           onVehicleOrDateChange();
-          alert("Sinkronisasi dari GSheet Berhasil!");
+          
+          // Munculkan tanda centang sukses di sebelah tombol Syncronize
+          let checkIcon = document.getElementById('syncCheck');
+          if (checkIcon) {
+            checkIcon.classList.remove('hidden');
+            setTimeout(() => { checkIcon.classList.add('hidden'); }, 3000);
+          }
         }
       } catch (err) {
         console.warn("Gagal tarik data otomatis:", err);
@@ -423,6 +429,7 @@
       const parts = rawDate.split('-');
       const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
 
+      // Ambil semua record untuk tanggal dan plat tersebut (lintas rit)
       const records = databaseData.filter(i => i.tanggal === formattedDate && i.vehicle === selectedVehicle);
 
       let maxRit = 1;
@@ -430,6 +437,7 @@
 
       let currentRecord = records.find(r => Number(r.rit) === maxRit);
 
+      // Cek apakah rit saat ini sudah menyelesaikan tahapan terakhir (finishUnload)
       if (currentRecord && currentRecord.finishUnload && currentRecord.finishUnload !== "") {
         maxRit += 1;
         currentRecord = null;
@@ -458,6 +466,7 @@
       allStages.forEach(stage => {
         let isDone = record && record[stage.val] && record[stage.val] !== "";
         if (isDone) {
+          // Warna hitam / disabled agar konsisten di HP & Laptop
           html += `<option value="${stage.val}" disabled class="text-slate-500 bg-slate-950 font-normal">✔ ${stage.label} (Sudah Selesai)</option>`;
         } else {
           let selectedAttr = !firstAvailableSet ? 'selected' : '';
@@ -471,7 +480,7 @@
 
     setDefaultDate();
     renderAppUI();
-    fetchDataFromGSheet(); // Auto sync saat web dibuka dari device baru
+    fetchDataFromGSheet(); // Tarik data otomatis di background saat dibuka
 
     function addNewMasterItem(type) {
       let val = '';
@@ -708,7 +717,7 @@
       );
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="17" class="p-4 text-center text-slate-400">Belum ada data tersimpan. Silakan klik tombol "Sinkron dari GSheet".</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="17" class="p-4 text-center text-slate-400">Belum ada data tersimpan. Silakan klik tombol "Syncronize".</td></tr>';
         return;
       }
 
