@@ -325,9 +325,9 @@
         <!-- MANAJEMEN AKUN / INVITATION EDITOR (KHUSUS OWNER) -->
         <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 space-y-3">
           <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center">
-            <i class="fa-solid fa-user-plus mr-1.5"></i> Manajemen Akun Editor & Role (Invitation)
+            <i class="fa-solid fa-user-plus mr-1.5"></i> Manajemen Akun Editor & Role (Tersinkronisasi GSheet)
           </h4>
-          <p class="text-[11px] text-slate-400">Tambahkan email staff atau driver beserta rolenya agar mereka memiliki akses yang sesuai saat login.</p>
+          <p class="text-[11px] text-slate-400">Tambahkan email staff atau driver beserta rolenya. Data ini tersinkron otomatis ke Google Sheet.</p>
           <div class="flex flex-col sm:flex-row items-center gap-2">
             <input type="email" id="inviteEmailInput" placeholder="email_staff@gmail.com" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white w-full sm:flex-1">
             <select id="inviteRoleSelect" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white w-full sm:w-48">
@@ -425,13 +425,43 @@
       document.getElementById('customModal').classList.add('hidden');
     }
 
+    let invitedUsersList = [];
+
+    // Tarik data users dari Google Sheet agar sinkron antar perangkat
+    async function fetchUsersFromGSheet() {
+      try {
+        let res = await fetch(GSHEET_API_URL + "?action=getUsers");
+        let json = await res.json();
+        if (json && json.users) {
+          invitedUsersList = json.users;
+          localStorage.setItem('invited_users_list', JSON.stringify(invitedUsersList));
+          renderAppUI();
+        }
+      } catch (err) {
+        console.warn("Gagal ambil data user dari GSheet, pakai cache lokal:", err);
+        invitedUsersList = JSON.parse(localStorage.getItem('invited_users_list') || '[]');
+      }
+    }
+
+    // Simpan data users ke Google Sheet (Hanya Owner)
+    async function syncUsersToGSheet() {
+      try {
+        await fetch(GSHEET_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "saveUsers", users: invitedUsersList })
+        });
+      } catch (err) {
+        console.warn("Gagal sinkronisasi user ke GSheet:", err);
+      }
+    }
+
     // Cek Sesi Login Saat Halaman Dimuat
     function checkAuthSession() {
       let activeEmail = localStorage.getItem('user_email');
       let loginScreen = document.getElementById('loginScreen');
 
       if (!activeEmail) {
-        // Belum login, tampilkan layar login yang manis
         loginScreen.classList.remove('hidden');
       } else {
         loginScreen.classList.add('hidden');
@@ -439,17 +469,19 @@
       }
     }
 
-    function handleAuthLogin(event) {
+    async function handleAuthLogin(event) {
       event.preventDefault();
       let emailInput = document.getElementById('loginEmailInput').value.trim().toLowerCase();
       if (!emailInput) return;
+
+      // Pastikan ambil data terbaru dulu sebelum validasi login
+      await fetchUsersFromGSheet();
 
       let assignedRole = "Driver";
       if (emailInput === OWNER_EMAIL.toLowerCase()) {
         assignedRole = "Owner";
       } else {
-        let invitedUsers = JSON.parse(localStorage.getItem('invited_users_list') || '[]');
-        let found = invitedUsers.find(u => u.email.toLowerCase() === emailInput);
+        let found = invitedUsersList.find(u => u.email.toLowerCase() === emailInput);
         if (found) {
           assignedRole = found.role;
         } else {
@@ -473,9 +505,7 @@
       document.getElementById('loginScreen').classList.remove('hidden');
     }
 
-    let invitedUsersList = JSON.parse(localStorage.getItem('invited_users_list') || '[]');
-
-    function addInvitedUser() {
+    async function addInvitedUser() {
       let email = document.getElementById('inviteEmailInput').value.trim().toLowerCase();
       let role = document.getElementById('inviteRoleSelect').value;
       if (!email) {
@@ -495,16 +525,20 @@
       }
 
       localStorage.setItem('invited_users_list', JSON.stringify(invitedUsersList));
+      await syncUsersToGSheet(); // Sinkron ke GSheet
+
       document.getElementById('inviteEmailInput').value = '';
       renderAppUI();
-      showSuccessModal("Akun berhasil ditambahkan & di-invite!");
+      showSuccessModal("Akun berhasil ditambahkan & disinkronkan ke GSheet!");
     }
 
-    function removeInvitedUser(index) {
+    async function removeInvitedUser(index) {
       invitedUsersList.splice(index, 1);
       localStorage.setItem('invited_users_list', JSON.stringify(invitedUsersList));
+      await syncUsersToGSheet(); // Sinkron ke GSheet
+
       renderAppUI();
-      showSuccessModal("Akun berhasil dihapus dari daftar.");
+      showSuccessModal("Akun berhasil dihapus.");
     }
 
     function loadAccountSettings() {
@@ -514,8 +548,7 @@
       if (email.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
         role = "Owner";
       } else {
-        let invitedUsers = JSON.parse(localStorage.getItem('invited_users_list') || '[]');
-        let found = invitedUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+        let found = invitedUsersList.find(u => u.email.toLowerCase() === email.toLowerCase());
         if (found) {
           role = found.role;
         } else {
@@ -723,7 +756,9 @@
 
     // Eksekusi Awal Saat Load Page
     setDefaultDate();
-    checkAuthSession();
+    fetchUsersFromGSheet().then(() => {
+      checkAuthSession();
+    });
     renderAppUI();
     fetchDataFromGSheet();
 
