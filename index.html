@@ -29,26 +29,28 @@
     </div>
   </div>
 
-  <!-- Modal Ganti Akun / Role & Invitation Editor -->
+  <!-- Modal Invitation & Pengaturan Akun (Hanya Owner yang bisa atur role lain) -->
   <div id="accountModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl space-y-4">
-      <h3 class="text-base font-bold text-white flex items-center"><i class="fa-solid fa-user-gear mr-2 text-blue-400"></i> Pengaturan Akun & Akses (Invitation)</h3>
+      <h3 class="text-base font-bold text-white flex items-center"><i class="fa-solid fa-user-gear mr-2 text-blue-400"></i> Invitation & Panel Akses Akun</h3>
+      <p id="ownerNotice" class="text-[11px] text-amber-300 bg-amber-950/40 border border-amber-800/60 p-2.5 rounded-lg hidden">
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Anda login sebagai Owner (firmangustiadi08@gmail.com). Anda memiliki hak penuh menambahkan dan mengatur role editor.
+      </p>
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Pengguna / Editor</label>
-          <input type="email" id="inputEmailUser" placeholder="nama@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Pengguna / Editor yang di-Invite</label>
+          <input type="email" id="inputEmailUser" placeholder="staff_atau_driver@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
         </div>
-        <div>
+        <div id="roleSelectContainer">
           <label class="block text-xs font-semibold text-slate-300 mb-1">Pilih Hak Akses Role</label>
           <select id="inputRoleUser" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            <option value="Owner">Owner (Full Akses: Form, Database, Hapus, Master Control)</option>
             <option value="Staff">Staff (Form, Database, Edit JO Saja)</option>
             <option value="Driver">Driver (Form Input Saja)</option>
           </select>
         </div>
       </div>
       <div class="flex space-x-2 pt-2">
-        <button onclick="saveAccountSettings()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow">Simpan</button>
+        <button onclick="saveAccountSettings()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow">Simpan & Aktifkan</button>
         <button onclick="closeAccountModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
       </div>
     </div>
@@ -97,7 +99,7 @@
             <span id="userRoleBadge" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Owner</span>
           </div>
         </div>
-        <button onclick="openAccountModal()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-slate-300 transition">Pengaturan Akun</button>
+        <button onclick="openAccountModal()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-slate-300 transition">Ganti / Invite Akun</button>
       </div>
 
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 sm:p-8 shadow-xl space-y-6">
@@ -358,6 +360,7 @@
 
   <script>
     const GSHEET_API_URL = "https://script.google.com/macros/s/AKfycbyOP_S4ihvKBKup6MgkcdZk0M6_L_85HT3T3ZPJ2aRNE2WYQYAqIfWKoWoSm0oCx68mTg/exec";
+    const OWNER_EMAIL = "firmangustiadi08@gmail.com";
 
     const quotesList = [
       "Tersenyumlah hari ini :)",
@@ -382,8 +385,23 @@
     }
 
     function openAccountModal() {
-      document.getElementById('inputEmailUser').value = localStorage.getItem('user_email') || "firmangustiadi08@gmail.com";
-      document.getElementById('inputRoleUser').value = localStorage.getItem('user_role') || "Owner";
+      let currentEmail = localStorage.getItem('user_email') || OWNER_EMAIL;
+      document.getElementById('inputEmailUser').value = currentEmail;
+      
+      let isOwner = (currentEmail.toLowerCase() === OWNER_EMAIL.toLowerCase());
+      let roleSelectContainer = document.getElementById('roleSelectContainer');
+      let ownerNotice = document.getElementById('ownerNotice');
+
+      if (isOwner) {
+        ownerNotice.classList.remove('hidden');
+        roleSelectContainer.classList.add('hidden'); // Owner tidak perlu ubah rolenya sendiri
+        document.getElementById('inputRoleUser').value = "Owner";
+      } else {
+        ownerNotice.classList.add('hidden');
+        roleSelectContainer.classList.remove('hidden');
+        document.getElementById('inputRoleUser').value = localStorage.getItem('user_role') || "Driver";
+      }
+
       document.getElementById('accountModal').classList.remove('hidden');
     }
 
@@ -392,18 +410,37 @@
     }
 
     function saveAccountSettings() {
-      let email = document.getElementById('inputEmailUser').value.trim() || "firmangustiadi08@gmail.com";
-      let role = document.getElementById('inputRoleUser').value;
-      localStorage.setItem('user_email', email);
-      localStorage.setItem('user_role', role);
+      let emailInput = document.getElementById('inputEmailUser').value.trim().toLowerCase();
+      if (!emailInput) {
+        alert("Email tidak boleh kosong!");
+        return;
+      }
+
+      let assignedRole = "Driver";
+      if (emailInput === OWNER_EMAIL.toLowerCase()) {
+        assignedRole = "Owner";
+      } else {
+        assignedRole = document.getElementById('inputRoleUser').value;
+      }
+
+      localStorage.setItem('user_email', emailInput);
+      localStorage.setItem('user_role', assignedRole);
+
       loadAccountSettings();
       closeAccountModal();
       showSuccessModal();
     }
 
     function loadAccountSettings() {
-      let email = localStorage.getItem('user_email') || "firmangustiadi08@gmail.com";
-      let role = localStorage.getItem('user_role'] || "Owner";
+      let email = localStorage.getItem('user_email') || OWNER_EMAIL;
+      
+      // Kunci mati: Jika email adalah firmangustiadi08@gmail.com, otomatis jadi Owner
+      let role = localStorage.getItem('user_role') || "Owner";
+      if (email.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+        role = "Owner";
+        localStorage.setItem('user_role', "Owner");
+      }
+
       document.getElementById('currentUserEmail').innerText = email;
       let badge = document.getElementById('userRoleBadge');
       badge.innerText = role;
@@ -417,15 +454,15 @@
         if(btnMaster) btnMaster.style.display = "flex";
       } else if (role === "Staff") {
         badge.className = "text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-bold";
-        if(btnDb) btnDb.style.display = "flex"; // Staff bisa akses database & edit JO
-        if(btnMaster) btnMaster.style.display = "none"; // Staff tidak bisa akses master control
+        if(btnDb) btnDb.style.display = "flex"; // Staff bisa akses Database View & Edit JO
+        if(btnMaster) btnMaster.style.display = "none"; // Staff tidak bisa akses Master Control
       } else {
-        // Driver (atau default jika belum diatur)
+        // Driver
         badge.className = "text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold";
-        if(btnDb) btnDb.style.display = "none"; // Driver tidak bisa lihat database
-        if(btnMaster) btnMaster.style.display = "none"; // Driver tidak bisa master control
+        if(btnDb) btnDb.style.display = "none"; // Driver disembunyikan total tab database
+        if(btnMaster) btnMaster.style.display = "none"; // Driver disembunyikan master control
         
-        // Jika sedang di tab selain form, paksa pindah ke form
+        // Paksa ke form input jika sedang di tab lain
         let currentTabMaster = document.getElementById('tabMaster');
         let currentTabDb = document.getElementById('tabDb');
         if((currentTabMaster && !currentTabMaster.classList.contains('hidden')) || (currentTabDb && !currentTabDb.classList.contains('hidden'))) {
