@@ -441,6 +441,7 @@
         errorMsg.classList.add('hidden');
 
         applyRolePermissions();
+        switchTab('form');
         fetchMasterAndDatabase();
       } else {
         errorMsg.classList.remove('hidden');
@@ -453,6 +454,10 @@
 
       if (!loggedInUser) return;
 
+      // Reset tampilan awal tombol navigasi
+      if (btnDb) btnDb.style.display = "flex";
+      if (btnMaster) btnMaster.style.display = "flex";
+
       if (loggedInUser.role === "Owner") {
         if (btnDb) btnDb.style.display = "flex";
         if (btnMaster) btnMaster.style.display = "flex";
@@ -462,7 +467,6 @@
       } else if (loggedInUser.role === "Staff") {
         if (btnDb) btnDb.style.display = "none";
         if (btnMaster) btnMaster.style.display = "none";
-        switchTab('form');
       }
     }
 
@@ -470,6 +474,12 @@
       loggedInUser = null;
       document.getElementById('loginEmailInput').value = '';
       document.getElementById('loginScreen').classList.remove('hidden');
+      
+      // Reset visibilitas tombol navigasi kembali ke default agar tidak nyangkut role sebelumnya
+      const btnDb = document.getElementById('btnTabDb');
+      const btnMaster = document.getElementById('btnTabMaster');
+      if (btnDb) btnDb.style.display = "flex";
+      if (btnMaster) btnMaster.style.display = "flex";
     }
 
     function setDefaultDate() {
@@ -648,13 +658,15 @@
 
           renderAppUI();
           renderDatabaseTable();
+          if (loggedInUser) {
+            applyRolePermissions();
+          }
         }
       } catch (err) {
         console.error("Gagal sinkron data cloud:", err);
       }
     }
 
-    // Load data master di awal sebelum layar login dibuka untuk memastikan akun staff baru langsung dikenali di device manapun
     window.addEventListener('DOMContentLoaded', async () => {
       const emailInput = document.getElementById('loginEmailInput');
       const subtitle = document.getElementById('loginSubtitle');
