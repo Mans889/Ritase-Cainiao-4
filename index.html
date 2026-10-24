@@ -16,7 +16,6 @@
   <!-- HALAMAN LOGIN -->
   <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
-      <!-- Logo Diperbesar & Ditambahkan ke Menu Login (Poin 5) -->
       <div class="flex items-center justify-center space-x-2 mb-2">
         <div class="bg-white px-2.5 py-1 rounded-xl shadow-lg flex items-center justify-center">
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTudPr-kpZPPau1HGN55b5y6Z5EekweEAPRVlZUkviXYiFxY3MFz7z_Z6l7&s=10" alt="Logo ASSA" class="h-10 w-auto object-contain">
@@ -60,7 +59,6 @@
     <div class="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex flex-col sm:flex-row items-center justify-between gap-2">
       <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
         <div class="flex items-center space-x-2">
-          <!-- Logo Diperbesar (Poin 5) -->
           <div class="bg-white px-2 py-1 rounded-xl shadow flex items-center justify-center">
             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTudPr-kpZPPau1HGN55b5y6Z5EekweEAPRVlZUkviXYiFxY3MFz7z_Z6l7&s=10" alt="Logo ASSA" class="h-8 sm:h-9 w-auto object-contain">
           </div>
@@ -423,7 +421,7 @@
       
       const rawDate = document.getElementById('tanggalBekerja').value || '2026-10-24';
       const parts = rawDate.split('-');
-      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
+      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`;
       
       const watermark = document.getElementById('liveWatermark');
       if (watermark) watermark.innerText = `TIMESTAMP: ${formattedDateDMY} ${timeStr}`;
@@ -495,12 +493,11 @@
       updateTimestampDisplay();
     }
 
-    // Poin 3: Logika dropdown tahapan (hitamkan yang sudah dipilih, lanjut ke berikutnya, reset jika semua done ke rit selanjutnya)
     function onVehicleOrDateChange() {
       const rawDate = document.getElementById('tanggalBekerja').value;
       if (!rawDate) return;
       const parts = rawDate.split('-');
-      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY untuk pencocokan database
+      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`;
       
       const veh = document.getElementById('vehicle').value;
       const tahapSelect = document.getElementById('tahap');
@@ -517,7 +514,7 @@
         { val: "finishUnload", label: "Finish Unload" }
       ];
 
-      let records = databaseData.filter(i => i.tanggal === formattedDateDMY && i.vehicle === veh);
+      let records = databaseData.filter(i => String(i.tanggal).trim() === String(formattedDateDMY).trim() && String(i.vehicle).trim() === String(veh).trim());
       let activeRit = 1;
 
       if (records.length > 0) {
@@ -548,11 +545,13 @@
         if (isDone) {
           opt.innerText = `${st.label} (Done)`;
           opt.disabled = true;
-          opt.style.color = "#94a3b8";
+          opt.style.color = "#64748b";
           opt.style.backgroundColor = "#020617";
         } else {
           opt.innerText = st.label;
           opt.disabled = false;
+          opt.style.color = "#ffffff";
+          opt.style.backgroundColor = "#0f172a";
         }
         tahapSelect.appendChild(opt);
       });
@@ -561,6 +560,18 @@
       if (firstAvailable) {
         tahapSelect.value = firstAvailable.value;
       }
+    }
+
+    function formatDateToDMY(dateStr) {
+      if (!dateStr) return "-";
+      if (dateStr.includes("T") || (dateStr.includes("-") && dateStr.indexOf("-") === 4)) {
+        let cleanDate = dateStr.split("T")[0];
+        let p = cleanDate.split("-");
+        if (p.length === 3) {
+          return `${p[2]}-${p[1]}-${p[0]}`;
+        }
+      }
+      return dateStr;
     }
 
     function renderAppUI() {
@@ -869,7 +880,7 @@
 
       const rawDate = document.getElementById('tanggalBekerja').value;
       const parts = rawDate.split('-');
-      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`; // Poin 2: Format DD-MM-YYYY
+      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`;
       const tahapVal = document.getElementById('tahap').value;
       const selectedVehicle = document.getElementById('vehicle').value;
 
@@ -942,7 +953,6 @@
       capturedPhotoData = null;
     }
 
-    // Poin 1: Update JO langsung di row yang sama tanpa buat row baru
     async function updateJobOrderInline(index, newJoValue) {
       databaseData[index].jobOrder = newJoValue.trim() || 'JO-';
       const item = databaseData[index];
@@ -1007,13 +1017,14 @@
         thHeaderAksi.style.display = isOwner ? "table-cell" : "none";
       }
 
-      const filtered = databaseData.filter(i => 
-        i.tanggal.toLowerCase().includes(searchQuery) || 
-        i.kategori.toLowerCase().includes(searchQuery) || 
-        i.vehicle.toLowerCase().includes(searchQuery) || 
-        i.jobOrder.toLowerCase().includes(searchQuery) ||
-        (i.driver && i.driver.toLowerCase().includes(searchQuery))
-      );
+      const filtered = databaseData.filter(i => {
+        const formattedTgl = formatDateToDMY(i.tanggal);
+        return formattedTgl.toLowerCase().includes(searchQuery) || 
+          i.kategori.toLowerCase().includes(searchQuery) || 
+          i.vehicle.toLowerCase().includes(searchQuery) || 
+          i.jobOrder.toLowerCase().includes(searchQuery) ||
+          (i.driver && i.driver.toLowerCase().includes(searchQuery));
+      });
 
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${isOwner ? 17 : 16}" class="p-4 text-center text-slate-400">Belum ada data tersimpan.</td></tr>`;
@@ -1022,6 +1033,7 @@
 
       filtered.forEach((item) => {
         const originalIndex = databaseData.indexOf(item);
+        const displayDate = formatDateToDMY(item.tanggal);
         
         const cellInput = (val, foto) => {
           return `
@@ -1042,7 +1054,7 @@
 
         tbody.innerHTML += `
           <tr class="hover:bg-slate-750 border-b border-slate-700/50">
-            <td class="p-3 font-mono text-blue-300 font-bold">${item.tanggal}</td>
+            <td class="p-3 font-mono text-blue-300 font-bold">${displayDate}</td>
             <td class="p-3"><span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded text-[10px]">${item.kategori}</span></td>
             <td class="p-3 font-semibold text-blue-400">${item.vehicle}</td>
             <td class="p-3 text-center"><span class="bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded text-[10px]">${item.tipeUnit}</span></td>
