@@ -21,14 +21,14 @@
       </div>
       <div>
         <h2 class="text-xl font-bold text-white mb-1">Login Sistem Ritase</h2>
-        <p class="text-xs text-slate-400">Masukkan email terdaftar untuk akses aplikasi</p>
+        <p id="loginSubtitle" class="text-xs text-slate-400">Memuat data sistem dari Cloud...</p>
       </div>
       <div class="space-y-4 text-left">
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Email Karyawan / Driver</label>
-          <input type="email" id="loginEmailInput" placeholder="nama@domain.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-3 text-white text-sm focus:outline-none focus:border-blue-500 transition">
+          <input type="email" id="loginEmailInput" placeholder="Menghubungkan ke server..." disabled class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-3 text-white text-sm focus:outline-none focus:border-blue-500 transition opacity-60 cursor-not-allowed">
         </div>
-        <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg">
+        <button id="loginButton" onclick="handleLogin()" disabled class="w-full bg-blue-600/50 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg cursor-not-allowed">
           Masuk Aplikasi <i class="fa-solid fa-arrow-right ml-1.5"></i>
         </button>
       </div>
@@ -414,13 +414,16 @@
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
       const timeStr = `${hours}:${minutes}:${seconds}`;
-      document.getElementById('waktuOtomatis').value = timeStr;
+      const waktuInput = document.getElementById('waktuOtomatis');
+      if (waktuInput) waktuInput.value = timeStr;
       const tglBekerja = document.getElementById('tanggalBekerja').value || '2026-10-24';
-      document.getElementById('liveWatermark').innerText = `TIMESTAMP: ${tglBekerja} ${timeStr}`;
+      const watermark = document.getElementById('liveWatermark');
+      if (watermark) watermark.innerText = `TIMESTAMP: ${tglBekerja} ${timeStr}`;
     }
 
     setInterval(() => {
-      if (!document.getElementById('waktuOtomatis').matches(':focus')) {
+      const waktuInput = document.getElementById('waktuOtomatis');
+      if (waktuInput && !waktuInput.matches(':focus')) {
         updateTimestampDisplay();
       }
     }, 1000);
@@ -448,15 +451,17 @@
       const btnDb = document.getElementById('btnTabDb');
       const btnMaster = document.getElementById('btnTabMaster');
 
+      if (!loggedInUser) return;
+
       if (loggedInUser.role === "Owner") {
-        btnDb.style.display = "flex";
-        btnMaster.style.display = "flex";
+        if (btnDb) btnDb.style.display = "flex";
+        if (btnMaster) btnMaster.style.display = "flex";
       } else if (loggedInUser.role === "Assist") {
-        btnDb.style.display = "flex";
-        btnMaster.style.display = "none";
+        if (btnDb) btnDb.style.display = "flex";
+        if (btnMaster) btnMaster.style.display = "none";
       } else if (loggedInUser.role === "Staff") {
-        btnDb.style.display = "none";
-        btnMaster.style.display = "none";
+        if (btnDb) btnDb.style.display = "none";
+        if (btnMaster) btnMaster.style.display = "none";
         switchTab('form');
       }
     }
@@ -472,57 +477,80 @@
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, '0');
       const dd = String(today.getDate()).padStart(2, '0');
-      document.getElementById('tanggalBekerja').value = `${yyyy}-${mm}-${dd}`;
+      const tglElem = document.getElementById('tanggalBekerja');
+      if (tglElem) tglElem.value = `${yyyy}-${mm}-${dd}`;
       updateTimestampDisplay();
     }
 
     function renderAppUI() {
       const driverSelect = document.getElementById('driver');
-      const curDriver = driverSelect.value;
-      driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>' + driverList.map(d => `<option value="${d}">${d}</option>`).join('');
-      if(curDriver) driverSelect.value = curDriver;
+      if (driverSelect) {
+        const curDriver = driverSelect.value;
+        driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>' + driverList.map(d => `<option value="${d}">${d}</option>`).join('');
+        if(curDriver) driverSelect.value = curDriver;
+      }
 
       const coDriverSelect = document.getElementById('coDriver');
-      const curCoDriver = coDriverSelect.value;
-      coDriverSelect.innerHTML = '<option value="">-- Pilih Co-Driver --</option>' + coDriverList.map(c => `<option value="${c}">${c}</option>`).join('');
-      if(curCoDriver) coDriverSelect.value = curCoDriver;
+      if (coDriverSelect) {
+        const curCoDriver = coDriverSelect.value;
+        coDriverSelect.innerHTML = '<option value="">-- Pilih Co-Driver --</option>' + coDriverList.map(c => `<option value="${c}">${c}</option>`).join('');
+        if(curCoDriver) coDriverSelect.value = curCoDriver;
+      }
 
       const katSelect = document.getElementById('kategoriHeader');
-      const curKat = katSelect.value;
-      katSelect.innerHTML = kategoriHeaderList.map(k => `<option value="${k}">${k}</option>`).join('');
-      if(curKat) katSelect.value = curKat;
+      if (katSelect) {
+        const curKat = katSelect.value;
+        katSelect.innerHTML = kategoriHeaderList.map(k => `<option value="${k}">${k}</option>`).join('');
+        if(curKat) katSelect.value = curKat;
+      }
 
       const vehSelect = document.getElementById('vehicle');
-      const curVeh = vehSelect.value;
-      vehSelect.innerHTML = '<option value="">-- Pilih Plat --</option>' + vehicleList.map(v => `<option value="${v}">${v}</option>`).join('');
-      if(curVeh) vehSelect.value = curVeh;
+      if (vehSelect) {
+        const curVeh = vehSelect.value;
+        vehSelect.innerHTML = '<option value="">-- Pilih Plat --</option>' + vehicleList.map(v => `<option value="${v}">${v}</option>`).join('');
+        if(curVeh) vehSelect.value = curVeh;
+      }
 
       const loadSelect = document.getElementById('loadingLocation');
-      const curLoad = loadSelect.value;
-      loadSelect.innerHTML = '<option value="">-- Pilih Muat --</option>' + loadingLocations.map(l => `<option value="${l}">${l}</option>`).join('');
-      if(curLoad) loadSelect.value = curLoad;
+      if (loadSelect) {
+        const curLoad = loadSelect.value;
+        loadSelect.innerHTML = '<option value="">-- Pilih Muat --</option>' + loadingLocations.map(l => `<option value="${l}">${l}</option>`).join('');
+        if(curLoad) loadSelect.value = curLoad;
+      }
 
       const unloadSelect = document.getElementById('unloadingLocation');
-      const curUnload = unloadSelect.value;
-      unloadSelect.innerHTML = '<option value="">-- Pilih Bongkar --</option>' + unloadingLocations.map(u => `<option value="${u}">${u}</option>`).join('');
-      if(curUnload) unloadSelect.value = curUnload;
+      if (unloadSelect) {
+        const curUnload = unloadSelect.value;
+        unloadSelect.innerHTML = '<option value="">-- Pilih Bongkar --</option>' + unloadingLocations.map(u => `<option value="${u}">${u}</option>`).join('');
+        if(curUnload) unloadSelect.value = curUnload;
+      }
 
-      document.getElementById('userMasterList').innerHTML = userList.map((u, i) => `
-        <div class="flex justify-between items-center bg-slate-800 px-2 py-1.5 rounded text-xs">
-          <div>
-            <span class="text-white font-medium block">${u.email}</span>
-            <span class="text-[10px] text-amber-300 font-semibold">${u.role}</span>
+      const userMasterList = document.getElementById('userMasterList');
+      if (userMasterList) {
+        userMasterList.innerHTML = userList.map((u, i) => `
+          <div class="flex justify-between items-center bg-slate-800 px-2 py-1.5 rounded text-xs">
+            <div>
+              <span class="text-white font-medium block">${u.email}</span>
+              <span class="text-[10px] text-amber-300 font-semibold">${u.role}</span>
+            </div>
+            <button onclick="removeUser(${i})" class="text-red-400 font-bold px-1.5">×</button>
           </div>
-          <button onclick="removeUser(${i})" class="text-red-400 font-bold px-1.5">×</button>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
-      document.getElementById('driverMasterList').innerHTML = driverList.map((d, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${d}</span><button onclick="removeItem('driver', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
-      document.getElementById('coDriverMasterList').innerHTML = coDriverList.map((c, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${c}</span><button onclick="removeItem('coDriver', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
-      document.getElementById('kategoriMasterList').innerHTML = kategoriHeaderList.map((k, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${k}</span><button onclick="removeItem('kategori', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
-      document.getElementById('vehicleMasterList').innerHTML = vehicleList.map((v, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${v}</span><button onclick="removeItem('vehicle', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
-      document.getElementById('loadingMasterList').innerHTML = loadingLocations.map((l, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${l}</span><button onclick="removeItem('loading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
-      document.getElementById('unloadingMasterList').innerHTML = unloadingLocations.map((u, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${u}</span><button onclick="removeItem('unloading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
+      const setList = (id, list, type) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = list.map((item, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${item}</span><button onclick="removeItem('${type}', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
+        }
+      };
+
+      setList('driverMasterList', driverList, 'driver');
+      setList('coDriverMasterList', coDriverList, 'coDriver');
+      setList('kategoriMasterList', kategoriHeaderList, 'kategori');
+      setList('vehicleMasterList', vehicleList, 'vehicle');
+      setList('loadingMasterList', loadingLocations, 'loading');
+      setList('unloadingMasterList', unloadingLocations, 'unloading');
     }
 
     async function saveMasterToCloud() {
@@ -607,7 +635,7 @@
             if (result.master.users && result.master.users.length > 0) {
               userList = result.master.users.map(item => {
                 let parts = item.split("|");
-                return { email: parts[0], role: parts[1] || "Owner" };
+                return { email: parts[0].trim(), role: (parts[1] || "Owner").trim() };
               });
             }
             if (result.master.drivers && result.master.drivers.length > 0) driverList = result.master.drivers;
@@ -626,27 +654,57 @@
       }
     }
 
+    // Load data master di awal sebelum layar login dibuka untuk memastikan akun staff baru langsung dikenali di device manapun
+    window.addEventListener('DOMContentLoaded', async () => {
+      const emailInput = document.getElementById('loginEmailInput');
+      const subtitle = document.getElementById('loginSubtitle');
+      const loginBtn = document.getElementById('loginButton');
+
+      if (emailInput) {
+        emailInput.placeholder = "Memuat data sistem dari Cloud...";
+        emailInput.disabled = true;
+      }
+
+      await fetchMasterAndDatabase();
+
+      if (emailInput && subtitle && loginBtn) {
+        emailInput.disabled = false;
+        emailInput.placeholder = "nama@domain.com";
+        emailInput.classList.remove('opacity-60', 'cursor-not-allowed');
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('cursor-not-allowed', 'bg-blue-600/50');
+        loginBtn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        subtitle.innerText = "Masukkan email terdaftar untuk akses aplikasi";
+      }
+
+      setDefaultDate();
+    });
+
     setInterval(() => {
       if (loggedInUser) {
         fetchMasterAndDatabase();
       }
     }, 5000);
 
-    setDefaultDate();
-    renderAppUI();
-
     function switchTab(tab) {
       if (loggedInUser && loggedInUser.role === "Staff" && tab !== 'form') {
         return;
       }
 
-      ['tabForm', 'tabDb', 'tabMaster'].forEach(t => document.getElementById(t).classList.add('hidden'));
+      ['tabForm', 'tabDb', 'tabMaster'].forEach(t => {
+        const elem = document.getElementById(t);
+        if (elem) elem.classList.add('hidden');
+      });
       ['btnTabForm', 'btnTabDb', 'btnTabMaster'].forEach(b => {
-        document.getElementById(b).className = "px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center whitespace-nowrap";
+        const elem = document.getElementById(b);
+        if (elem) elem.className = "px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center whitespace-nowrap";
       });
 
-      document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
-      document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center whitespace-nowrap";
+      const targetTab = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+      const targetBtn = document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+
+      if (targetTab) targetTab.classList.remove('hidden');
+      if (targetBtn) targetBtn.className = "px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center whitespace-nowrap";
 
       if (tab === 'db' || tab === 'master') {
         fetchMasterAndDatabase();
@@ -660,17 +718,19 @@
       const action = document.getElementById('cameraAction');
       const canvas = document.getElementById('canvasElement');
 
-      canvas.classList.add('hidden');
+      if (canvas) canvas.classList.add('hidden');
       try {
         if (videoStream) {
           videoStream.getTracks().forEach(t => t.stop());
         }
         videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-        video.srcObject = videoStream;
-        container.classList.remove('hidden');
-        placeholder.classList.add('hidden');
-        action.classList.remove('hidden');
-        action.innerHTML = '<button type="button" onclick="takeSnapshot()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2 rounded-xl text-xs sm:text-sm transition shadow"><i class="fa-solid fa-camera-retro mr-1"></i> Ambil Foto (Snap)</button>';
+        if (video) video.srcObject = videoStream;
+        if (container) container.classList.remove('hidden');
+        if (placeholder) placeholder.classList.add('hidden');
+        if (action) {
+          action.classList.remove('hidden');
+          action.innerHTML = '<button type="button" onclick="takeSnapshot()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2 rounded-xl text-xs sm:text-sm transition shadow"><i class="fa-solid fa-camera-retro mr-1"></i> Ambil Foto (Snap)</button>';
+        }
       } catch (err) {
         alert("Gagal akses kamera: " + err.message);
       }
@@ -682,12 +742,15 @@
       const container = document.getElementById('cameraContainer');
       const action = document.getElementById('cameraAction');
 
+      if (!video || !canvas) return;
+
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const ctxWatermark = document.getElementById('liveWatermark').innerText;
+      const watermarkElem = document.getElementById('liveWatermark');
+      const ctxWatermark = watermarkElem ? watermarkElem.innerText : "TIMESTAMP";
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
       ctx.fillRect(10, canvas.height - 40, 340, 30);
       ctx.fillStyle = '#ffffff';
@@ -701,9 +764,11 @@
         videoStream = null;
       }
 
-      container.classList.add('hidden');
+      if (container) container.classList.add('hidden');
       canvas.classList.remove('hidden');
-      action.innerHTML = '<span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-circle-check"></i> Foto Siap Kirim</span> <button type="button" onclick="startCamera()" class="ml-2 text-xs bg-slate-700 px-3 py-1.5 rounded text-white font-medium">Ulangi</button>';
+      if (action) {
+        action.innerHTML = '<span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-circle-check"></i> Foto Siap Kirim</span> <button type="button" onclick="startCamera()" class="ml-2 text-xs bg-slate-700 px-3 py-1.5 rounded text-white font-medium">Ulangi</button>';
+      }
     }
 
     function retakePhoto() {
@@ -780,11 +845,15 @@
         console.error("Gagal sinkron background:", e);
       }
 
-      document.getElementById('ritaseForm').reset();
+      const formElem = document.getElementById('ritaseForm');
+      if (formElem) formElem.reset();
       setDefaultDate();
-      document.getElementById('canvasElement').classList.add('hidden');
-      document.getElementById('cameraAction').classList.add('hidden');
-      document.getElementById('cameraPlaceholder').classList.remove('hidden');
+      const canvasElem = document.getElementById('canvasElement');
+      const camAction = document.getElementById('cameraAction');
+      const camPlaceholder = document.getElementById('cameraPlaceholder');
+      if (canvasElem) canvasElem.classList.add('hidden');
+      if (camAction) camAction.classList.add('hidden');
+      if (camPlaceholder) camPlaceholder.classList.remove('hidden');
       capturedPhotoData = null;
     }
 
@@ -821,6 +890,8 @@
       const tbody = document.getElementById('dbTableBody');
       const searchInputElem = document.getElementById('searchInput');
       const thHeaderAksi = document.getElementById('thHeaderAksi');
+      if (!tbody) return;
+
       const searchQuery = searchInputElem ? searchInputElem.value.toLowerCase() : '';
       tbody.innerHTML = '';
 
