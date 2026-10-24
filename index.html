@@ -141,7 +141,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-semibold text-amber-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-calendar-days mr-1"></i> Tanggal Bekerja</label>
-              <input type="date" id="tanggalBekerja" required onchange="onVehicleOrDateChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-blue-500 transition">
+              <input type="date" id="tanggalBekerja" required onchange="updateTimestampDisplay()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-blue-500 transition">
             </div>
             <div></div>
           </div>
@@ -408,7 +408,6 @@
     let currentActiveRit = 1;
     let loggedInUser = null;
 
-    // Update Timestamp Otomatis saat halaman / tahap berubah
     function updateTimestampDisplay() {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
@@ -416,7 +415,8 @@
       const seconds = String(now.getSeconds()).padStart(2, '0');
       const timeStr = `${hours}:${minutes}:${seconds}`;
       document.getElementById('waktuOtomatis').value = timeStr;
-      document.getElementById('liveWatermark').innerText = `TIMESTAMP: ${document.getElementById('tanggalBekerja').value} ${timeStr}`;
+      const tglBekerja = document.getElementById('tanggalBekerja').value || '2026-10-24';
+      document.getElementById('liveWatermark').innerText = `TIMESTAMP: ${tglBekerja} ${timeStr}`;
     }
 
     setInterval(() => {
@@ -596,7 +596,6 @@
       showSuccessModal();
     }
 
-    // Sinkronisasi Master & Database universal antar device secara real-time
     async function fetchMasterAndDatabase() {
       try {
         const response = await fetch(GSHEET_API_URL + "?action=getdata");
@@ -627,7 +626,6 @@
       }
     }
 
-    // Auto-poll sinkronisasi device setiap 5 detik agar selalu update dari device owner manapun
     setInterval(() => {
       if (loggedInUser) {
         fetchMasterAndDatabase();
