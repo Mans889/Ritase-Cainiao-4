@@ -68,7 +68,7 @@
       </div>
 
       <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-end overflow-x-auto pb-1 sm:pb-0">
-        <button onclick="fetchDatabaseData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-md shadow transition flex items-center whitespace-nowrap">
+        <button onclick="fetchMasterAndDatabase()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-md shadow transition flex items-center whitespace-nowrap">
           <i class="fa-solid fa-rotate mr-1"></i> Sync
         </button>
         <div id="navTabsContainer" class="flex items-center space-x-1">
@@ -178,7 +178,13 @@
 
           <div>
             <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">Ritase (Tahapan)</label>
-            <select id="tahap" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
+            <select id="tahap" required onchange="updateTimestampDisplay()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
+              <option value="arrivalMuat">Arrival Muat</option>
+              <option value="startLoad">Start Load</option>
+              <option value="finishLoad">Finish Load</option>
+              <option value="arrivalBongkar">Arrival Bongkar</option>
+              <option value="startUnload">Start Unload</option>
+              <option value="finishUnload">Finish Unload</option>
             </select>
           </div>
 
@@ -257,12 +263,12 @@
                 <th class="p-3 whitespace-nowrap text-center">Tipe Unit</th>
                 <th class="p-3 whitespace-nowrap text-center">Rit</th>
                 <th class="p-3 whitespace-nowrap">Loading Loc</th>
-                <th class="p-3 whitespace-nowrap">Serv. Process (Arrival Muat)</th>
-                <th class="p-3 whitespace-nowrap">Serv. Process (Start Load)</th>
-                <th class="p-3 whitespace-nowrap">Serv. Process (Finish Load)</th>
-                <th class="p-3 whitespace-nowrap">Serv. Process (Arrival Bongkar)</th>
-                <th class="p-3 whitespace-nowrap">Serv. Process (Start Unload)</th>
-                <th class="p-3 whitespace-nowrap">Serv. Process (Finish Unload)</th>
+                <th class="p-3 whitespace-nowrap">Arrival Muat</th>
+                <th class="p-3 whitespace-nowrap">Start Load</th>
+                <th class="p-3 whitespace-nowrap">Finish Load</th>
+                <th class="p-3 whitespace-nowrap">Arrival Bongkar</th>
+                <th class="p-3 whitespace-nowrap">Start Unload</th>
+                <th class="p-3 whitespace-nowrap">Finish Unload</th>
                 <th class="p-3 whitespace-nowrap">Unloading Loc</th>
                 <th class="p-3 whitespace-nowrap">Job Order</th>
                 <th class="p-3 whitespace-nowrap">Driver</th>
@@ -402,6 +408,23 @@
     let currentActiveRit = 1;
     let loggedInUser = null;
 
+    // Update Timestamp Otomatis saat halaman / tahap berubah
+    function updateTimestampDisplay() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const timeStr = `${hours}:${minutes}:${seconds}`;
+      document.getElementById('waktuOtomatis').value = timeStr;
+      document.getElementById('liveWatermark').innerText = `TIMESTAMP: ${document.getElementById('tanggalBekerja').value} ${timeStr}`;
+    }
+
+    setInterval(() => {
+      if (!document.getElementById('waktuOtomatis').matches(':focus')) {
+        updateTimestampDisplay();
+      }
+    }, 1000);
+
     function handleLogin() {
       const emailInput = document.getElementById('loginEmailInput').value.trim().toLowerCase();
       const errorMsg = document.getElementById('loginErrorMsg');
@@ -415,7 +438,7 @@
         errorMsg.classList.add('hidden');
 
         applyRolePermissions();
-        fetchDatabaseData();
+        fetchMasterAndDatabase();
       } else {
         errorMsg.classList.remove('hidden');
       }
@@ -450,51 +473,39 @@
       const mm = String(today.getMonth() + 1).padStart(2, '0');
       const dd = String(today.getDate()).padStart(2, '0');
       document.getElementById('tanggalBekerja').value = `${yyyy}-${mm}-${dd}`;
+      updateTimestampDisplay();
     }
 
     function renderAppUI() {
-      // Jangan render ulang dropdown form jika user sedang berada di tab form dan form sedang diisi/aktif agar tidak mereset input
       const driverSelect = document.getElementById('driver');
-      const currentDriverVal = driverSelect.value;
-      if (driverSelect.options.length <= 1) {
-        driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>' + driverList.map(d => `<option value="${d}">${d}</option>`).join('');
-        if (currentDriverVal) driverSelect.value = currentDriverVal;
-      }
+      const curDriver = driverSelect.value;
+      driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>' + driverList.map(d => `<option value="${d}">${d}</option>`).join('');
+      if(curDriver) driverSelect.value = curDriver;
 
       const coDriverSelect = document.getElementById('coDriver');
-      const currentCoDriverVal = coDriverSelect.value;
-      if (coDriverSelect.options.length <= 1) {
-        coDriverSelect.innerHTML = '<option value="">-- Pilih Co-Driver --</option>' + coDriverList.map(c => `<option value="${c}">${c}</option>`).join('');
-        if (currentCoDriverVal) coDriverSelect.value = currentCoDriverVal;
-      }
+      const curCoDriver = coDriverSelect.value;
+      coDriverSelect.innerHTML = '<option value="">-- Pilih Co-Driver --</option>' + coDriverList.map(c => `<option value="${c}">${c}</option>`).join('');
+      if(curCoDriver) coDriverSelect.value = curCoDriver;
 
       const katSelect = document.getElementById('kategoriHeader');
-      const currentKatVal = katSelect.value;
-      if (katSelect.options.length <= 1) {
-        katSelect.innerHTML = kategoriHeaderList.map(k => `<option value="${k}">${k}</option>`).join('');
-        if (currentKatVal) katSelect.value = currentKatVal;
-      }
+      const curKat = katSelect.value;
+      katSelect.innerHTML = kategoriHeaderList.map(k => `<option value="${k}">${k}</option>`).join('');
+      if(curKat) katSelect.value = curKat;
 
       const vehSelect = document.getElementById('vehicle');
-      const currentVehVal = vehSelect.value;
-      if (vehSelect.options.length <= 1) {
-        vehSelect.innerHTML = '<option value="">-- Pilih Plat --</option>' + vehicleList.map(v => `<option value="${v}">${v}</option>`).join('');
-        if (currentVehVal) vehSelect.value = currentVehVal;
-      }
+      const curVeh = vehSelect.value;
+      vehSelect.innerHTML = '<option value="">-- Pilih Plat --</option>' + vehicleList.map(v => `<option value="${v}">${v}</option>`).join('');
+      if(curVeh) vehSelect.value = curVeh;
 
       const loadSelect = document.getElementById('loadingLocation');
-      const currentLoadVal = loadSelect.value;
-      if (loadSelect.options.length <= 1) {
-        loadSelect.innerHTML = '<option value="">-- Pilih Muat --</option>' + loadingLocations.map(l => `<option value="${l}">${l}</option>`).join('');
-        if (currentLoadVal) loadSelect.value = currentLoadVal;
-      }
+      const curLoad = loadSelect.value;
+      loadSelect.innerHTML = '<option value="">-- Pilih Muat --</option>' + loadingLocations.map(l => `<option value="${l}">${l}</option>`).join('');
+      if(curLoad) loadSelect.value = curLoad;
 
       const unloadSelect = document.getElementById('unloadingLocation');
-      const currentUnloadVal = unloadSelect.value;
-      if (unloadSelect.options.length <= 1) {
-        unloadSelect.innerHTML = '<option value="">-- Pilih Bongkar --</option>' + unloadingLocations.map(u => `<option value="${u}">${u}</option>`).join('');
-        if (currentUnloadVal) unloadSelect.value = currentUnloadVal;
-      }
+      const curUnload = unloadSelect.value;
+      unloadSelect.innerHTML = '<option value="">-- Pilih Bongkar --</option>' + unloadingLocations.map(u => `<option value="${u}">${u}</option>`).join('');
+      if(curUnload) unloadSelect.value = curUnload;
 
       document.getElementById('userMasterList').innerHTML = userList.map((u, i) => `
         <div class="flex justify-between items-center bg-slate-800 px-2 py-1.5 rounded text-xs">
@@ -585,13 +596,13 @@
       showSuccessModal();
     }
 
-    // Auto-sync hanya memperbarui data tabel di background TANPA mengganggu form input aktif
-    async function fetchDatabaseData() {
+    // Sinkronisasi Master & Database universal antar device secara real-time
+    async function fetchMasterAndDatabase() {
       try {
         const response = await fetch(GSHEET_API_URL + "?action=getdata");
         const result = await response.json();
         if (result.status === "success") {
-          databaseData = result.data;
+          databaseData = result.data || [];
           
           if (result.master) {
             if (result.master.users && result.master.users.length > 0) {
@@ -608,19 +619,20 @@
             if (result.master.unloading && result.master.unloading.length > 0) unloadingLocations = result.master.unloading;
           }
 
+          renderAppUI();
           renderDatabaseTable();
         }
       } catch (err) {
-        console.error("Gagal ambil data database:", err);
+        console.error("Gagal sinkron data cloud:", err);
       }
     }
 
-    // Interval background sync setiap 10 detik agar jauh lebih stabil dan tidak reaktif berlebihan
+    // Auto-poll sinkronisasi device setiap 5 detik agar selalu update dari device owner manapun
     setInterval(() => {
       if (loggedInUser) {
-        fetchDatabaseData();
+        fetchMasterAndDatabase();
       }
-    }, 10000);
+    }, 5000);
 
     setDefaultDate();
     renderAppUI();
@@ -638,8 +650,8 @@
       document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
       document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center whitespace-nowrap";
 
-      if (tab === 'db') {
-        fetchDatabaseData();
+      if (tab === 'db' || tab === 'master') {
+        fetchMasterAndDatabase();
       }
     }
 
@@ -677,12 +689,12 @@
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const now = new Date();
+      const ctxWatermark = document.getElementById('liveWatermark').innerText;
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
       ctx.fillRect(10, canvas.height - 40, 340, 30);
       ctx.fillStyle = '#ffffff';
       ctx.font = '13px monospace';
-      ctx.fillText(document.getElementById('liveWatermark').innerText, 20, canvas.height - 20);
+      ctx.fillText(ctxWatermark, 20, canvas.height - 20);
 
       capturedPhotoData = canvas.toDataURL('image/jpeg');
       
@@ -754,12 +766,10 @@
         existingRecord.remarks = payload.remarks || existingRecord.remarks;
       } else {
         databaseData.unshift(payload);
-        existingRecord = payload;
       }
 
       showSuccessModal();
       renderDatabaseTable();
-      onVehicleOrDateChange();
 
       try {
         await fetch(GSHEET_API_URL, {
@@ -778,7 +788,6 @@
       document.getElementById('cameraAction').classList.add('hidden');
       document.getElementById('cameraPlaceholder').classList.remove('hidden');
       capturedPhotoData = null;
-      onVehicleOrDateChange();
     }
 
     async function deleteRecord(index) {
@@ -791,7 +800,6 @@
         const item = databaseData[index];
         databaseData.splice(index, 1);
         renderDatabaseTable();
-        onVehicleOrDateChange();
         showSuccessModal();
 
         try {
