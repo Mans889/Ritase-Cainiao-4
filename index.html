@@ -141,7 +141,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-semibold text-amber-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-calendar-days mr-1"></i> Tanggal Bekerja</label>
-              <input type="date" id="tanggalBekerja" required onchange="updateTimestampDisplay()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-blue-500 transition">
+              <input type="date" id="tanggalBekerja" required onchange="onVehicleOrDateChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-blue-500 transition">
             </div>
             <div></div>
           </div>
@@ -178,7 +178,7 @@
 
           <div>
             <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">Ritase (Tahapan)</label>
-            <select id="tahap" required onchange="updateTimestampDisplay()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
+            <select id="tahap" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
               <option value="arrivalMuat">Arrival Muat</option>
               <option value="startLoad">Start Load</option>
               <option value="finishLoad">Finish Load</option>
@@ -448,7 +448,6 @@
       }
     }
 
-    // ATURAN HAK AKSES BERDASARKAN ROLE
     function applyRolePermissions() {
       const btnDb = document.getElementById('btnTabDb');
       const btnMaster = document.getElementById('btnTabMaster');
@@ -456,15 +455,12 @@
       if (!loggedInUser) return;
 
       if (loggedInUser.role === "Owner") {
-        // Owner: Semua menu tampil (Form, Database, Master Control)
         if (btnDb) btnDb.style.display = "flex";
         if (btnMaster) btnMaster.style.display = "flex";
       } else if (loggedInUser.role === "Assist") {
-        // Assist: Form Input & Database tampil, Master Control disembunyikan (Tombol X hapus di DB diatur di fungsi tabel)
         if (btnDb) btnDb.style.display = "flex";
         if (btnMaster) btnMaster.style.display = "none";
       } else if (loggedInUser.role === "Staff" || loggedInUser.role === "User") {
-        // Staff/User: Hanya Form Input yang tampil, Database & Master Control disembunyikan
         if (btnDb) btnDb.style.display = "none";
         if (btnMaster) btnMaster.style.display = "none";
       }
@@ -475,7 +471,6 @@
       document.getElementById('loginEmailInput').value = '';
       document.getElementById('loginScreen').classList.remove('hidden');
       
-      // Reset visibilitas tombol navigasi ke default saat logout
       const btnDb = document.getElementById('btnTabDb');
       const btnMaster = document.getElementById('btnTabMaster');
       if (btnDb) btnDb.style.display = "flex";
@@ -490,6 +485,72 @@
       const tglElem = document.getElementById('tanggalBekerja');
       if (tglElem) tglElem.value = `${yyyy}-${mm}-${dd}`;
       updateTimestampDisplay();
+    }
+
+    // Poin 5: Sinkronisasi tahapan, status Done, dan perhitungan Rit secara otomatis
+    function onVehicleOrDateChange() {
+      const tgl = document.getElementById('tanggalBekerja').value;
+      const veh = document.getElementById('vehicle').value;
+      const tahapSelect = document.getElementById('tahap');
+      const ritBadge = document.getElementById('ritBadge');
+      
+      if (!tgl || !veh) return;
+
+      const stages = [
+        { val: "arrivalMuat", label: "Arrival Muat" },
+        { val: "startLoad", label: "Start Load" },
+        { val: "finishLoad", label: "Finish Load" },
+        { val: "arrivalBongkar", label: "Arrival Bongkar" },
+        { val: "startUnload", label: "Start Unload" },
+        { val: "finishUnload", label: "Finish Unload" }
+      ];
+
+      // Cari record berdasarkan tanggal & kendaraan untuk melacak rit aktif
+      let records = databaseData.filter(i => i.tanggal === tgl && i.vehicle === veh);
+      let activeRit = 1;
+
+      if (records.length > 0) {
+        let maxRit = Math.max(...records.map(r => Number(r.rit) || 1));
+        let recordMaxRit = records.find(r => Number(r.rit) === maxRit);
+
+        if (recordMaxRit) {
+          let allDone = stages.every(st => recordMaxRit[st.val] && recordMaxRit[st.val].toString().trim() !== "");
+          if (allDone) {
+            activeRit = maxRit + 1;
+          } else {
+            activeRit = maxRit;
+          }
+        }
+      }
+
+      currentActiveRit = activeRit;
+      if (ritBadge) ritBadge.innerText = `Rit: ${activeRit}`;
+
+      let currentRecord = records.find(r => Number(r.rit) === activeRit);
+
+      tahapSelect.innerHTML = "";
+      stages.forEach(st => {
+        let isDone = currentRecord && currentRecord[st.val] && currentRecord[st.val].toString().trim() !== "";
+        let opt = document.createElement('option');
+        opt.value = st.val;
+        
+        if (isDone) {
+          opt.innerText = `${st.label} (Done)`;
+          opt.disabled = true;
+          opt.style.color = "#94a3b8";
+          opt.style.backgroundColor = "#020617";
+        } else {
+          opt.innerText = st.label;
+          opt.disabled = false;
+        }
+        tahapSelect.appendChild(opt);
+      });
+
+      // Pilih opsi pertama yang belum done secara otomatis
+      let firstAvailable = Array.from(tahapSelect.options).find(o => !o.disabled);
+      if (firstAvailable) {
+        tahapSelect.value = firstAvailable.value;
+      }
     }
 
     function renderAppUI() {
@@ -561,6 +622,8 @@
       setList('vehicleMasterList', vehicleList, 'vehicle');
       setList('loadingMasterList', loadingLocations, 'loading');
       setList('unloadingMasterList', unloadingLocations, 'unloading');
+
+      onVehicleOrDateChange();
     }
 
     async function saveMasterToCloud() {
@@ -817,12 +880,12 @@
         unloadingLocation: document.getElementById('unloadingLocation').value,
         jobOrder: jobOrderVal,
         remarks: document.getElementById('remarks').value || '',
-        arrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", fotoArrivalMuat: "",
-        startLoad: existingRecord ? existingRecord.startLoad : "", fotoStartLoad: "",
-        finishLoad: existingRecord ? existingRecord.finishLoad : "", fotoFinishLoad: "",
-        arrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", fotoArrivalBongkar: "",
-        startUnload: existingRecord ? existingRecord.startUnload : "", fotoStartUnload: "",
-        finishUnload: existingRecord ? existingRecord.finishUnload : "", fotoFinishUnload: ""
+        arrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", fotoArrivalMuat: existingRecord ? existingRecord.fotoArrivalMuat : "",
+        startLoad: existingRecord ? existingRecord.startLoad : "", fotoStartLoad: existingRecord ? existingRecord.fotoStartLoad : "",
+        finishLoad: existingRecord ? existingRecord.finishLoad : "", fotoFinishLoad: existingRecord ? existingRecord.fotoFinishLoad : "",
+        arrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", fotoArrivalBongkar: existingRecord ? existingRecord.fotoArrivalBongkar : "",
+        startUnload: existingRecord ? existingRecord.startUnload : "", fotoStartUnload: existingRecord ? existingRecord.fotoStartUnload : "",
+        finishUnload: existingRecord ? existingRecord.finishUnload : "", fotoFinishUnload: existingRecord ? existingRecord.fotoFinishUnload : ""
       };
 
       payload[tahapVal] = currentTime;
@@ -845,6 +908,7 @@
 
       showSuccessModal();
       renderDatabaseTable();
+      onVehicleOrDateChange();
 
       try {
         await fetch(GSHEET_API_URL, {
@@ -857,9 +921,8 @@
         console.error("Gagal sinkron background:", e);
       }
 
-      const formElem = document.getElementById('ritaseForm');
-      if (formElem) formElem.reset();
-      setDefaultDate();
+      document.getElementById('jobOrder').value = '';
+      document.getElementById('remarks').value = '';
       const canvasElem = document.getElementById('canvasElement');
       const camAction = document.getElementById('cameraAction');
       const camPlaceholder = document.getElementById('cameraPlaceholder');
@@ -867,6 +930,24 @@
       if (camAction) camAction.classList.add('hidden');
       if (camPlaceholder) camPlaceholder.classList.remove('hidden');
       capturedPhotoData = null;
+    }
+
+    // Poin 2: Fungsi update JO langsung dari input di tabel database view tanpa buat row baru
+    async function updateJobOrderInline(index, newJoValue) {
+      databaseData[index].jobOrder = newJoValue.trim() || 'JO-';
+      const item = databaseData[index];
+
+      try {
+        await fetch(GSHEET_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(item)
+        });
+        console.log("Job Order berhasil di-update secara sinkron!");
+      } catch(e) {
+        console.error("Gagal update JO:", e);
+      }
     }
 
     async function deleteRecord(index) {
@@ -907,7 +988,6 @@
       const searchQuery = searchInputElem ? searchInputElem.value.toLowerCase() : '';
       tbody.innerHTML = '';
 
-      // HANYA OWNER YANG MEMUNCULKAN KOLOM AKSI (HAPUS)
       const isOwner = loggedInUser && loggedInUser.role === "Owner";
       if (thHeaderAksi) {
         thHeaderAksi.style.display = isOwner ? "table-cell" : "none";
@@ -928,6 +1008,8 @@
 
       filtered.forEach((item) => {
         const originalIndex = databaseData.indexOf(item);
+        
+        // Poin 1: Pastikan foto bisa di-view langsung di web (link membuka tab baru)
         const cellInput = (val, foto) => {
           return `
             <td class="p-2.5 whitespace-nowrap">
@@ -939,7 +1021,6 @@
           `;
         };
 
-        // Jika Owner, tombol X muncul. Jika Assist (Role Assist bisa lihat DB tapi tombol X tidak ada/disembunyikan)
         let deleteButtonCell = isOwner ? `
           <td class="p-3 text-center">
             <button onclick="deleteRecord(${originalIndex})" class="bg-red-600 hover:bg-red-500 text-white font-bold w-6 h-6 rounded-lg flex items-center justify-center mx-auto transition" title="Hapus Baris"><i class="fa-solid fa-xmark text-xs"></i></button>
@@ -947,7 +1028,7 @@
         ` : '';
 
         tbody.innerHTML += `
-          <tr class="hover:bg-slate-750">
+          <tr class="hover:bg-slate-750 border-b border-slate-700/50">
             <td class="p-3 font-mono text-blue-300 font-bold">${item.tanggal}</td>
             <td class="p-3"><span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded text-[10px]">${item.kategori}</span></td>
             <td class="p-3 font-semibold text-blue-400">${item.vehicle}</td>
@@ -961,7 +1042,9 @@
             ${cellInput(item.startUnload, item.fotoStartUnload)}
             ${cellInput(item.finishUnload, item.fotoFinishUnload)}
             <td class="p-3 text-rose-200">${item.unloadingLocation}</td>
-            <td class="p-3 text-emerald-400 font-semibold">${item.jobOrder}</td>
+            <td class="p-3">
+              <input type="text" value="${item.jobOrder}" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 focus:outline-none focus:border-blue-500">
+            </td>
             <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
             ${deleteButtonCell}
