@@ -70,7 +70,7 @@
       </div>
 
       <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-end overflow-x-auto pb-1 sm:pb-0">
-        <button onclick="fetchMasterAndDatabase()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-md shadow transition flex items-center whitespace-nowrap">
+        <button onclick="fetchMasterAndDatabase(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-md shadow transition flex items-center whitespace-nowrap">
           <i class="fa-solid fa-rotate mr-1"></i> Sync
         </button>
         <div id="navTabsContainer" class="flex items-center space-x-1">
@@ -448,7 +448,7 @@
 
         applyRolePermissions();
         switchTab('form');
-        fetchMasterAndDatabase();
+        fetchMasterAndDatabase(true);
       } else {
         errorMsg.classList.remove('hidden');
       }
@@ -493,7 +493,7 @@
       updateTimestampDisplay();
     }
 
-    // Logika Penguncian Tahapan Sesuai Nopol & Rit secara Presisi Tanpa Balik ke Selesai
+    // Logika Penguncian Tahapan Sesuai Nopol & Rit secara Presisi
     function onVehicleOrDateChange() {
       const rawDate = document.getElementById('tanggalBekerja').value;
       if (!rawDate) return;
@@ -537,6 +537,9 @@
 
       let currentRecord = records.find(r => Number(r.rit) === activeRit);
 
+      // Simpan tahap yang sedang dipilih user saat ini (jika ada) agar tidak ter-reset saat background sync
+      let currentSelectedStage = tahapSelect.value;
+
       tahapSelect.innerHTML = "";
       stages.forEach(st => {
         let isDone = currentRecord && currentRecord[st.val] && currentRecord[st.val].toString().trim() !== "";
@@ -557,12 +560,19 @@
         tahapSelect.appendChild(opt);
       });
 
-      // Otomatis arahkan ke tahap pertama yang BELUM SELESAI (tidak disabled)
-      let firstAvailable = Array.from(tahapSelect.options).find(o => !o.disabled);
-      if (firstAvailable) {
-        tahapSelect.value = firstAvailable.value;
+      // Jika tahap sebelumnya masih valid dan belum selesai, pertahankan pilihan user
+      let isPreviousValid = currentSelectedStage && !Array.from(tahapSelect.options).find(o => o.value === currentSelectedStage && o.disabled);
+      
+      if (isPreviousValid) {
+        tahapSelect.value = currentSelectedStage;
       } else {
-        tahapSelect.value = stages[stages.length - 1].val;
+        // Jika belum ada pilihan atau tahap sebelumnya sudah done, arahkan ke tahap pertama yang belum selesai
+        let firstAvailable = Array.from(tahapSelect.options).find(o => !o.disabled);
+        if (firstAvailable) {
+          tahapSelect.value = firstAvailable.value;
+        } else {
+          tahapSelect.value = stages[stages.length - 1].val;
+        }
       }
     }
 
@@ -578,44 +588,44 @@
       return dateStr;
     }
 
-    function renderAppUI() {
+    function renderAppUI(isFullRender = false) {
       const driverSelect = document.getElementById('driver');
-      if (driverSelect) {
+      if (driverSelect && (isFullRender || !driverSelect.value)) {
         const curDriver = driverSelect.value;
         driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>' + driverList.map(d => `<option value="${d}">${d}</option>`).join('');
         if(curDriver) driverSelect.value = curDriver;
       }
 
       const coDriverSelect = document.getElementById('coDriver');
-      if (coDriverSelect) {
+      if (coDriverSelect && (isFullRender || !coDriverSelect.value)) {
         const curCoDriver = coDriverSelect.value;
         coDriverSelect.innerHTML = '<option value="">-- Pilih Co-Driver --</option>' + coDriverList.map(c => `<option value="${c}">${c}</option>`).join('');
         if(curCoDriver) coDriverSelect.value = curCoDriver;
       }
 
       const katSelect = document.getElementById('kategoriHeader');
-      if (katSelect) {
+      if (katSelect && (isFullRender || !katSelect.value)) {
         const curKat = katSelect.value;
         katSelect.innerHTML = kategoriHeaderList.map(k => `<option value="${k}">${k}</option>`).join('');
         if(curKat) katSelect.value = curKat;
       }
 
       const vehSelect = document.getElementById('vehicle');
-      if (vehSelect) {
+      if (vehSelect && (isFullRender || !vehSelect.value)) {
         const curVeh = vehSelect.value;
         vehSelect.innerHTML = '<option value="">-- Pilih Plat --</option>' + vehicleList.map(v => `<option value="${v}">${v}</option>`).join('');
         if(curVeh) vehSelect.value = curVeh;
       }
 
       const loadSelect = document.getElementById('loadingLocation');
-      if (loadSelect) {
+      if (loadSelect && (isFullRender || !loadSelect.value)) {
         const curLoad = loadSelect.value;
         loadSelect.innerHTML = '<option value="">-- Pilih Muat --</option>' + loadingLocations.map(l => `<option value="${l}">${l}</option>`).join('');
         if(curLoad) loadSelect.value = curLoad;
       }
 
       const unloadSelect = document.getElementById('unloadingLocation');
-      if (unloadSelect) {
+      if (unloadSelect && (isFullRender || !unloadSelect.value)) {
         const curUnload = unloadSelect.value;
         unloadSelect.innerHTML = '<option value="">-- Pilih Bongkar --</option>' + unloadingLocations.map(u => `<option value="${u}">${u}</option>`).join('');
         if(curUnload) unloadSelect.value = curUnload;
@@ -682,7 +692,7 @@
       if (email) {
         userList.push({ email, role });
         document.getElementById('newUserInput').value = '';
-        renderAppUI();
+        renderAppUI(true);
         saveMasterToCloud();
         showSuccessModal();
       } else {
@@ -692,7 +702,7 @@
 
     function removeUser(idx) {
       userList.splice(idx, 1);
-      renderAppUI();
+      renderAppUI(true);
       saveMasterToCloud();
       showSuccessModal();
     }
@@ -705,7 +715,7 @@
       if(type === 'vehicle') { val = document.getElementById('newVehicleInput').value.trim(); if(val) vehicleList.push(val); document.getElementById('newVehicleInput').value = ''; }
       if(type === 'loading') { val = document.getElementById('newLoadingInput').value.trim(); if(val) loadingLocations.push(val); document.getElementById('newLoadingInput').value = ''; }
       if(type === 'unloading') { val = document.getElementById('newUnloadingInput').value.trim(); if(val) unloadingLocations.push(val); document.getElementById('newUnloadingInput').value = ''; }
-      renderAppUI();
+      renderAppUI(true);
       saveMasterToCloud();
       showSuccessModal();
     }
@@ -717,12 +727,12 @@
       if(type === 'vehicle') vehicleList.splice(idx, 1);
       if(type === 'loading') loadingLocations.splice(idx, 1);
       if(type === 'unloading') unloadingLocations.splice(idx, 1);
-      renderAppUI();
+      renderAppUI(true);
       saveMasterToCloud();
       showSuccessModal();
     }
 
-    async function fetchMasterAndDatabase() {
+    async function fetchMasterAndDatabase(isFull = false) {
       try {
         const response = await fetch(GSHEET_API_URL + "?action=getdata");
         const result = await response.json();
@@ -744,7 +754,7 @@
             if (result.master.unloading && result.master.unloading.length > 0) unloadingLocations = result.master.unloading;
           }
 
-          renderAppUI();
+          renderAppUI(isFull);
           renderDatabaseTable();
           if (loggedInUser) {
             applyRolePermissions();
@@ -765,7 +775,7 @@
         emailInput.disabled = true;
       }
 
-      await fetchMasterAndDatabase();
+      await fetchMasterAndDatabase(true);
 
       if (emailInput && subtitle && loginBtn) {
         emailInput.disabled = false;
@@ -780,9 +790,10 @@
       setDefaultDate();
     });
 
+    // Auto sync background setiap 5 detik TANPA mereset pilihan input form user
     setInterval(() => {
       if (loggedInUser) {
-        fetchMasterAndDatabase();
+        fetchMasterAndDatabase(false);
       }
     }, 5000);
 
@@ -807,7 +818,7 @@
       if (targetBtn) targetBtn.className = "px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center whitespace-nowrap";
 
       if (tab === 'db' || tab === 'master') {
-        fetchMasterAndDatabase();
+        fetchMasterAndDatabase(true);
       }
     }
 
