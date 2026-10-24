@@ -291,9 +291,9 @@
               <input type="email" id="newUserInput" placeholder="email@domain.com" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <div class="flex items-center space-x-1.5">
                 <select id="newUserRole" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-amber-300 font-semibold w-full">
-                  <option value="Full Access (Owner)">Full Access (Owner)</option>
+                  <option value="Owner">Owner</option>
+                  <option value="Assist">Assist</option>
                   <option value="Staff">Staff</option>
-                  <option value="Driver / User">Driver / User</option>
                 </select>
                 <button onclick="addNewUser()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
               </div>
@@ -386,7 +386,7 @@
       document.getElementById('customModal').classList.add('hidden');
     }
 
-    let userList = [{ email: "firmangustiadi08@gmail.com", role: "Full Access (Owner)" }];
+    let userList = [{ email: "firmangustiadi08@gmail.com", role: "Owner" }];
     let driverList = ["Firman Gustiadi", "Budi Santoso", "Joko Widodo", "Ahmad Yani"];
     let coDriverList = ["Ridwan", "Slamet", "Ujang", "Dedi"];
     let kategoriHeaderList = ["Outbound", "Trial unit 40FT & 45FT", "Migrasi Clove", "Unit Assesment 45ft", "Outbound Cai Niao", "Outbound Clove"];
@@ -412,7 +412,7 @@
         document.getElementById('userRoleBadge').innerText = foundUser.role;
         errorMsg.classList.add('hidden');
 
-        // ATUR HAK AKSES BERDASARKAN ROLE
+        // ATUR HAK AKSES BERDASARKAN 3 ROLE: Owner, Assist, Staff
         applyRolePermissions();
 
         fetchDatabaseData();
@@ -425,14 +425,14 @@
       const btnDb = document.getElementById('btnTabDb');
       const btnMaster = document.getElementById('btnTabMaster');
 
-      if (loggedInUser.role === "Full Access (Owner)") {
+      if (loggedInUser.role === "Owner") {
         btnDb.style.display = "flex";
         btnMaster.style.display = "flex";
-      } else if (loggedInUser.role === "Staff") {
+      } else if (loggedInUser.role === "Assist") {
         btnDb.style.display = "flex";
-        btnMaster.style.display = "none"; // Staff tidak bisa akses Master Control
-      } else {
-        // Driver / User Biasa (Hanya Form Input saja)
+        btnMaster.style.display = "none"; // Assist tidak punya akses Master Control
+      } else if (loggedInUser.role === "Staff") {
+        // Staff hanya memunculkan Form Input saja (Database & Master ditutup)
         btnDb.style.display = "none";
         btnMaster.style.display = "none";
         switchTab('form');
@@ -561,7 +561,7 @@
             if (result.master.users && result.master.users.length > 0) {
               userList = result.master.users.map(item => {
                 let parts = item.split("|");
-                return { email: parts[0], role: parts[1] || "Full Access (Owner)" };
+                return { email: parts[0], role: parts[1] || "Owner" };
               });
             }
             if (result.master.drivers && result.master.drivers.length > 0) driverList = result.master.drivers;
@@ -590,6 +590,11 @@
     renderAppUI();
 
     function switchTab(tab) {
+      // Jika login sebagai Staff, cegah buka tab selain form
+      if (loggedInUser && loggedInUser.role === "Staff" && tab !== 'form') {
+        return;
+      }
+
       ['tabForm', 'tabDb', 'tabMaster'].forEach(t => document.getElementById(t).classList.add('hidden'));
       ['btnTabForm', 'btnTabDb', 'btnTabMaster'].forEach(b => {
         document.getElementById(b).className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center";
@@ -742,8 +747,8 @@
     }
 
     async function deleteRecord(index) {
-      // Staff dan Driver dicegah agar tidak bisa menghapus
-      if (loggedInUser && loggedInUser.role !== "Full Access (Owner)") {
+      // Hanya Owner yang boleh menghapus baris data
+      if (!loggedInUser || loggedInUser.role !== "Owner") {
         alert("Anda tidak memiliki hak akses untuk menghapus data!");
         return;
       }
@@ -779,8 +784,7 @@
       const searchQuery = searchInputElem ? searchInputElem.value.toLowerCase() : '';
       tbody.innerHTML = '';
 
-      // Sembunyikan kolom aksi hapus jika bukan Owner
-      const isOwner = loggedInUser && loggedInUser.role === "Full Access (Owner)";
+      const isOwner = loggedInUser && loggedInUser.role === "Owner";
       if (thHeaderAksi) {
         thHeaderAksi.style.display = isOwner ? "table-cell" : "none";
       }
