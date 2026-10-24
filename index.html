@@ -9,6 +9,10 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     body { font-family: 'Inter', sans-serif; }
+    select option:disabled {
+      color: #64748b !important;
+      background-color: #020617 !important;
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
@@ -192,8 +196,8 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">No. Job Order (Kosong = JO-)</label>
-              <input type="text" id="jobOrder" placeholder="Contoh: JO-481176" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
+              <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">No. Job Order (Default JO- & Bisa Diedit)</label>
+              <input type="text" id="jobOrder" value="JO-" placeholder="Contoh: JO-481176" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-emerald-400 font-semibold focus:outline-none focus:border-blue-500 transition">
             </div>
             <div>
               <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">Waktu Check-in (Otomatis)</label>
@@ -247,7 +251,7 @@
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-3 sm:p-4 space-y-4 shadow-xl">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
           <h3 class="text-xs sm:text-sm font-bold text-white flex items-center">
-            <i class="fa-solid fa-table text-emerald-400 mr-2"></i> Database View & Sinkronisasi
+            <i class="fa-solid fa-table text-emerald-400 mr-2"></i> Database View & Sinkronisasi (DD-MM-YYYY | HH:MM:SS)
           </h3>
           <div class="relative w-full sm:w-80">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-calendar-days text-xs"></i></span>
@@ -457,18 +461,22 @@
     function applyRolePermissions() {
       const btnDb = document.getElementById('btnTabDb');
       const btnMaster = document.getElementById('btnTabMaster');
+      const jobOrderInput = document.getElementById('jobOrder');
 
       if (!loggedInUser) return;
 
       if (loggedInUser.role === "Owner") {
         if (btnDb) btnDb.style.display = "flex";
         if (btnMaster) btnMaster.style.display = "flex";
+        if (jobOrderInput) jobOrderInput.disabled = false;
       } else if (loggedInUser.role === "Assist") {
         if (btnDb) btnDb.style.display = "flex";
         if (btnMaster) btnMaster.style.display = "none";
+        if (jobOrderInput) jobOrderInput.disabled = false;
       } else if (loggedInUser.role === "Staff" || loggedInUser.role === "User") {
         if (btnDb) btnDb.style.display = "none";
         if (btnMaster) btnMaster.style.display = "none";
+        if (jobOrderInput) jobOrderInput.disabled = false; // Bisa diedit sesuai role
       }
     }
 
@@ -493,7 +501,7 @@
       updateTimestampDisplay();
     }
 
-    // Logika Penguncian Tahapan Sesuai Nopol & Rit secara Presisi
+    // LOGIKA PENGUNCIAN TAHAPAN (DISABLED & MENGHITAM JIKA SUDAH SELESAI)
     function onVehicleOrDateChange() {
       const rawDate = document.getElementById('tanggalBekerja').value;
       if (!rawDate) return;
@@ -548,7 +556,7 @@
         if (isDone) {
           opt.innerText = `${st.label} (Done)`;
           opt.disabled = true;
-          opt.style.color = "#64748b"; // Warna gelap / terkunci
+          opt.style.color = "#64748b";
           opt.style.backgroundColor = "#020617";
         } else {
           opt.innerText = st.label;
@@ -916,7 +924,6 @@
 
       showSuccessModal();
       
-      // UPDATE DATA LOKAL SECARA INSTAN AGAR DROPDOWN LANGSUNG TERKUNCI (DONE)
       let existingRecord = databaseData.find(item => String(item.tanggal).trim() === String(formattedDateDMY).trim() && String(item.vehicle).trim() === String(selectedVehicle) && Number(item.rit) === Number(currentActiveRit));
       
       if (existingRecord) {
@@ -942,7 +949,6 @@
         databaseData.unshift(newRec);
       }
 
-      // Segarkan UI dan dropdown secara instan
       renderDatabaseTable();
       onVehicleOrDateChange();
 
@@ -957,7 +963,7 @@
         console.error("Gagal sinkron background:", e);
       }
 
-      document.getElementById('jobOrder').value = '';
+      document.getElementById('jobOrder').value = 'JO-';
       document.getElementById('remarks').value = '';
       const canvasElem = document.getElementById('canvasElement');
       const camAction = document.getElementById('cameraAction');
@@ -1085,7 +1091,7 @@
             <td class="p-3">
               <input type="text" value="${item.jobOrder}" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 focus:outline-none focus:border-blue-500">
             </td>
-            <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
+            <td class="p-3 font-semibold text-emerald-300">${item.donor || item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
             ${deleteButtonCell}
           </tr>`;
