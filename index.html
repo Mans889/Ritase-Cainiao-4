@@ -54,30 +54,32 @@
 
   <!-- Header Navigasi -->
   <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40 shadow-md">
-    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-      <div class="flex items-center space-x-2.5">
-        <div class="bg-white px-1.5 py-1 rounded-lg shadow flex items-center justify-center">
-          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTudPr-kpZPPau1HGN55b5y6Z5EekweEAPRVlZUkviXYiFxY3MFz7z_Z6l7&s=10" alt="Logo ASSA" class="h-6 w-auto object-contain">
-        </div>
-        <div>
-          <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">Data Ritase Cai Niao 4 - Live</h1>
-          <p class="text-[10px] text-slate-400">Tracking Ritase Outbound ASSA</p>
+    <div class="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
+        <div class="flex items-center space-x-2">
+          <div class="bg-white px-1.5 py-0.5 rounded-lg shadow flex items-center justify-center">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTudPr-kpZPPau1HGN55b5y6Z5EekweEAPRVlZUkviXYiFxY3MFz7z_Z6l7&s=10" alt="Logo ASSA" class="h-5 sm:h-6 w-auto object-contain">
+          </div>
+          <div>
+            <h1 class="text-xs font-bold text-white tracking-wide">Ritase Cai Niao 4</h1>
+            <p class="text-[9px] text-slate-400">Outbound ASSA Live</p>
+          </div>
         </div>
       </div>
 
-      <div class="flex items-center space-x-2 flex-wrap justify-center">
-        <button onclick="fetchDatabaseData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-bold rounded-lg shadow transition flex items-center">
-          <i class="fa-solid fa-rotate mr-1.5"></i> Synchronize
+      <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-end overflow-x-auto pb-1 sm:pb-0">
+        <button onclick="fetchDatabaseData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-md shadow transition flex items-center whitespace-nowrap">
+          <i class="fa-solid fa-rotate mr-1"></i> Sync
         </button>
-        <div id="navTabsContainer" class="flex items-center space-x-1.5">
-          <button onclick="switchTab('form')" id="btnTabForm" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center">
-            <i class="fa-solid fa-pen-to-square mr-1"></i> Form Input
+        <div id="navTabsContainer" class="flex items-center space-x-1">
+          <button onclick="switchTab('form')" id="btnTabForm" class="px-2 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center whitespace-nowrap">
+            <i class="fa-solid fa-pen-to-square mr-1"></i> Form
           </button>
-          <button onclick="switchTab('db')" id="btnTabDb" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center">
-            <i class="fa-solid fa-database mr-1"></i> Database & GSheet
+          <button onclick="switchTab('db')" id="btnTabDb" class="px-2 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center whitespace-nowrap">
+            <i class="fa-solid fa-database mr-1"></i> Database
           </button>
-          <button onclick="switchTab('master')" id="btnTabMaster" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center">
-            <i class="fa-solid fa-gear mr-1"></i> Master Control
+          <button onclick="switchTab('master')" id="btnTabMaster" class="px-2 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center whitespace-nowrap">
+            <i class="fa-solid fa-gear mr-1"></i> Master
           </button>
         </div>
       </div>
@@ -85,74 +87,74 @@
   </header>
 
   <!-- Main Container -->
-  <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6">
+  <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6">
 
     <!-- TAB 1: FORM INPUT -->
-    <div id="tabForm" class="space-y-6 max-w-4xl mx-auto">
+    <div id="tabForm" class="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
       
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-3 sm:p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs sm:text-sm">
             <i class="fa-solid fa-user-shield"></i>
           </div>
           <div>
-            <p class="text-xs text-slate-400">Akun Login Aktif:</p>
-            <p id="currentUserEmail" class="text-sm font-semibold text-white">-</p>
-            <span id="userRoleBadge" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">-</span>
+            <p class="text-[10px] sm:text-xs text-slate-400">Akun Login Aktif:</p>
+            <p id="currentUserEmail" class="text-xs sm:text-sm font-semibold text-white">-</p>
+            <span id="userRoleBadge" class="text-[9px] sm:text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold">-</span>
           </div>
         </div>
-        <button onclick="logoutUser()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-slate-300 transition">Keluar / Ganti Akun</button>
+        <button onclick="logoutUser()" class="text-[11px] bg-slate-700 hover:bg-slate-600 px-2.5 py-1.5 rounded-lg text-slate-300 transition">Keluar</button>
       </div>
 
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 sm:p-8 shadow-xl space-y-6">
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-8 shadow-xl space-y-5">
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-slate-700">
           <div>
-            <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-user mr-1"></i> Nama Driver</label>
-            <select id="driver" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+            <label class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-user mr-1"></i> Nama Driver</label>
+            <select id="driver" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-user-group mr-1"></i> Co-Driver</label>
-            <select id="coDriver" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+            <label class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-user-group mr-1"></i> Co-Driver</label>
+            <select id="coDriver" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
             </select>
           </div>
         </div>
 
-        <div class="bg-gradient-to-r from-blue-950/60 to-slate-900 border border-blue-900/50 rounded-xl p-4 sm:p-5 shadow-inner">
-          <label class="block text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+        <div class="bg-gradient-to-r from-blue-950/60 to-slate-900 border border-blue-900/50 rounded-xl p-3 sm:p-5 shadow-inner">
+          <label class="block text-[11px] font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center justify-between">
             <span class="flex items-center"><i class="fa-solid fa-file-excel text-emerald-400 mr-2"></i> Pilih Kategori Operasional</span>
-            <span class="text-[10px] text-slate-400 font-normal">Data otomatis masuk ke sheet tujuan</span>
+            <span class="text-[9px] text-slate-400 font-normal hidden sm:inline">Data otomatis masuk ke sheet tujuan</span>
           </label>
-          <select id="kategoriHeader" required class="w-full bg-slate-900 border border-blue-600/60 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-400 transition shadow">
+          <select id="kategoriHeader" required class="w-full bg-slate-900 border border-blue-600/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-blue-400 transition shadow">
           </select>
         </div>
 
-        <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
-          <h2 class="text-lg font-bold text-white flex items-center">
+        <div class="border-b border-slate-700 pb-2.5 flex justify-between items-center">
+          <h2 class="text-base sm:text-lg font-bold text-white flex items-center">
             <i class="fa-solid fa-truck-fast text-blue-500 mr-2"></i> Update Ritase
           </h2>
-          <span id="ritBadge" class="text-xs bg-emerald-900/50 text-emerald-300 px-3 py-1 rounded-full border border-emerald-700 font-bold">Rit: 1</span>
+          <span id="ritBadge" class="text-[11px] bg-emerald-900/50 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-700 font-bold">Rit: 1</span>
         </div>
 
-        <form id="ritaseForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form id="ritaseForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-amber-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-calendar-days mr-1"></i> Tanggal Bekerja</label>
-              <input type="date" id="tanggalBekerja" required onchange="onVehicleOrDateChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white font-mono focus:outline-none focus:border-blue-500 transition">
+              <label class="block text-[11px] font-semibold text-amber-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-calendar-days mr-1"></i> Tanggal Bekerja</label>
+              <input type="date" id="tanggalBekerja" required onchange="onVehicleOrDateChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-blue-500 transition">
             </div>
             <div></div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/40 p-4 rounded-xl border border-slate-700">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/40 p-3 sm:p-4 rounded-xl border border-slate-700">
             <div>
-              <label class="block text-xs font-semibold text-blue-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-truck mr-1"></i> Plat Nomor Kendaraan</label>
-              <select id="vehicle" required onchange="onVehicleOrDateChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+              <label class="block text-[11px] font-semibold text-blue-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-truck mr-1"></i> Plat Nomor Kendaraan</label>
+              <select id="vehicle" required onchange="onVehicleOrDateChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-amber-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-truck-monster mr-1"></i> Tipe Unit</label>
-              <select id="tipeUnit" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-semibold focus:outline-none focus:border-blue-500 transition">
+              <label class="block text-[11px] font-semibold text-amber-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-truck-monster mr-1"></i> Tipe Unit</label>
+              <select id="tipeUnit" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-amber-300 font-semibold focus:outline-none focus:border-blue-500 transition">
                 <option value="40 Feet">40 Feet</option>
                 <option value="45 Feet">45 Feet</option>
                 <option value="Kolor Ijo">Kolor Ijo</option>
@@ -161,58 +163,58 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-teal-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-warehouse mr-1"></i> Loading Location (Muat)</label>
-              <select id="loadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-teal-200 font-medium focus:outline-none focus:border-blue-500 transition">
+              <label class="block text-[11px] font-semibold text-teal-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-warehouse mr-1"></i> Loading Location (Muat)</label>
+              <select id="loadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-teal-200 font-medium focus:outline-none focus:border-blue-500 transition">
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-rose-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-location-dot mr-1"></i> Unloading Location (Bongkar)</label>
-              <select id="unloadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-rose-200 font-medium focus:outline-none focus:border-blue-500 transition">
+              <label class="block text-[11px] font-semibold text-rose-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-location-dot mr-1"></i> Unloading Location (Bongkar)</label>
+              <select id="unloadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-rose-200 font-medium focus:outline-none focus:border-blue-500 transition">
               </select>
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Ritase (Tahapan)</label>
-            <select id="tahap" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+            <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">Ritase (Tahapan)</label>
+            <select id="tahap" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
             </select>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">No. Job Order (Kosong = JO-)</label>
-              <input type="text" id="jobOrder" placeholder="Contoh: JO-481176" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+              <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">No. Job Order (Kosong = JO-)</label>
+              <input type="text" id="jobOrder" placeholder="Contoh: JO-481176" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Waktu Check-in (Otomatis)</label>
-              <input type="text" id="waktuOtomatis" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-blue-400 font-mono font-bold">
+              <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">Waktu Check-in (Otomatis)</label>
+              <input type="text" id="waktuOtomatis" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-blue-400 font-mono font-bold">
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Ambil Foto Bukti Tahapan (Live Camera + Timestamp Wajib)</label>
-            <div class="bg-slate-900 border-2 border-dashed border-slate-700 rounded-2xl p-4 text-center relative overflow-hidden">
-              <div id="cameraContainer" class="relative w-full h-64 bg-black rounded-xl overflow-hidden hidden">
+            <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-2">Ambil Foto Bukti Tahapan (Live Camera + Timestamp Wajib)</label>
+            <div class="bg-slate-900 border-2 border-dashed border-slate-700 rounded-2xl p-3 text-center relative overflow-hidden">
+              <div id="cameraContainer" class="relative w-full h-56 sm:h-64 bg-black rounded-xl overflow-hidden hidden">
                 <video id="videoElement" autoplay playsinline class="w-full h-full object-cover"></video>
-                <div id="liveWatermark" class="absolute bottom-2 left-2 bg-black/70 text-white text-[11px] font-mono px-2 py-1 rounded">
+                <div id="liveWatermark" class="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] sm:text-[11px] font-mono px-2 py-1 rounded">
                   TIMESTAMP: 23-10-2026 21:30:00
                 </div>
               </div>
-              <canvas id="canvasElement" class="w-full h-64 object-cover rounded-xl hidden"></canvas>
-              <div id="cameraPlaceholder" class="py-10">
-                <i class="fa-solid fa-camera text-4xl text-slate-500 mb-2"></i>
-                <p class="text-sm text-slate-400 mb-3">Kamera siap digunakan</p>
-                <button type="button" onclick="startCamera()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition shadow">
+              <canvas id="canvasElement" class="w-full h-56 sm:h-64 object-cover rounded-xl hidden"></canvas>
+              <div id="cameraPlaceholder" class="py-8">
+                <i class="fa-solid fa-camera text-3xl sm:text-4xl text-slate-500 mb-2"></i>
+                <p class="text-xs sm:text-sm text-slate-400 mb-3">Kamera siap digunakan</p>
+                <button type="button" onclick="startCamera()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow">
                   <i class="fa-solid fa-power-off mr-1"></i> Buka Kamera Live
                 </button>
               </div>
               <div id="cameraAction" class="mt-3 hidden">
-                <button type="button" onclick="takeSnapshot()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow">
+                <button type="button" onclick="takeSnapshot()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2 rounded-xl text-xs sm:text-sm transition shadow">
                   <i class="fa-solid fa-camera-retro mr-1"></i> Ambil Foto (Snap)
                 </button>
-                <button type="button" onclick="retakePhoto()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium px-4 py-2.5 rounded-xl text-sm ml-2 transition">
+                <button type="button" onclick="retakePhoto()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm ml-2 transition">
                   Ulangi
                 </button>
               </div>
@@ -220,11 +222,11 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Keterangan / Remarks</label>
-            <textarea id="remarks" rows="2" placeholder="Catatan kendala atau informasi lapangan..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition"></textarea>
+            <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">Keterangan / Remarks</label>
+            <textarea id="remarks" rows="2" placeholder="Catatan kendala atau informasi lapangan..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition"></textarea>
           </div>
 
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg text-base">
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg text-sm sm:text-base">
             <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Submit & Sinkron ke GSheet & GDrive
           </button>
         </form>
@@ -233,10 +235,10 @@
     </div>
 
     <!-- TAB 2: DATABASE VIEW -->
-    <div id="tabDb" class="space-y-6 hidden">
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 space-y-4 shadow-xl">
+    <div id="tabDb" class="space-y-4 hidden">
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-3 sm:p-4 space-y-4 shadow-xl">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-          <h3 class="text-sm font-bold text-white flex items-center">
+          <h3 class="text-xs sm:text-sm font-bold text-white flex items-center">
             <i class="fa-solid fa-table text-emerald-400 mr-2"></i> Database View & Sinkronisasi
           </h3>
           <div class="relative w-full sm:w-80">
@@ -275,18 +277,18 @@
     </div>
 
     <!-- TAB 3: MASTER CONTROL -->
-    <div id="tabMaster" class="space-y-6 hidden max-w-6xl mx-auto">
-      <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-6 shadow-xl">
+    <div id="tabMaster" class="space-y-4 hidden max-w-6xl mx-auto">
+      <div class="bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 space-y-5 shadow-xl">
         <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-          <h3 class="text-base font-bold text-white flex items-center">
+          <h3 class="text-sm sm:text-base font-bold text-white flex items-center">
             <i class="fa-solid fa-gears text-amber-400 mr-2"></i> Panel Kontrol Master & Pengaturan
           </h3>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           
-          <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
-            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-users-gear mr-1.5"></i> USER & ROLE MANAGEMENT</h4>
+          <div class="space-y-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+            <h4 class="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-users-gear mr-1.5"></i> USER & ROLE MANAGEMENT</h4>
             <div class="space-y-2">
               <input type="email" id="newUserInput" placeholder="email@domain.com" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <div class="flex items-center space-x-1.5">
@@ -301,8 +303,8 @@
             <div id="userMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
           </div>
 
-          <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
-            <h4 class="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-user mr-1.5"></i> NAMA DRIVER</h4>
+          <div class="space-y-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+            <h4 class="text-[11px] font-bold text-emerald-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-user mr-1.5"></i> NAMA DRIVER</h4>
             <div class="flex items-center space-x-1.5">
               <input type="text" id="newDriverInput" placeholder="Nama driver..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <button onclick="addNewMasterItem('driver')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
@@ -310,8 +312,8 @@
             <div id="driverMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
           </div>
 
-          <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
-            <h4 class="text-xs font-bold text-teal-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-user-group mr-1.5"></i> CO-DRIVER</h4>
+          <div class="space-y-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+            <h4 class="text-[11px] font-bold text-teal-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-user-group mr-1.5"></i> CO-DRIVER</h4>
             <div class="flex items-center space-x-1.5">
               <input type="text" id="newCoDriverInput" placeholder="Nama co-driver..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <button onclick="addNewMasterItem('coDriver')" class="bg-teal-600 hover:bg-teal-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
@@ -319,8 +321,8 @@
             <div id="coDriverMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
           </div>
 
-          <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
-            <h4 class="text-xs font-bold text-blue-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-file-excel mr-1.5"></i> SHEET GSHEET</h4>
+          <div class="space-y-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+            <h4 class="text-[11px] font-bold text-blue-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-file-excel mr-1.5"></i> SHEET GSHEET</h4>
             <div class="flex items-center space-x-1.5">
               <input type="text" id="newKategoriInput" placeholder="Nama sheet..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <button onclick="addNewMasterItem('kategori')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
@@ -328,8 +330,8 @@
             <div id="kategoriMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
           </div>
 
-          <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
-            <h4 class="text-xs font-bold text-blue-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-truck mr-1.5"></i> PLAT NOMOR</h4>
+          <div class="space-y-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+            <h4 class="text-[11px] font-bold text-blue-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-truck mr-1.5"></i> PLAT NOMOR</h4>
             <div class="flex items-center space-x-1.5">
               <input type="text" id="newVehicleInput" placeholder="B 1234 XXX" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <button onclick="addNewMasterItem('vehicle')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
@@ -337,8 +339,8 @@
             <div id="vehicleMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
           </div>
 
-          <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
-            <h4 class="text-xs font-bold text-teal-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-warehouse mr-1.5"></i> LOADING LOC</h4>
+          <div class="space-y-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+            <h4 class="text-[11px] font-bold text-teal-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-warehouse mr-1.5"></i> LOADING LOC</h4>
             <div class="flex items-center space-x-1.5">
               <input type="text" id="newLoadingInput" placeholder="Gudang muat..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <button onclick="addNewMasterItem('loading')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
@@ -346,8 +348,8 @@
             <div id="loadingMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
           </div>
 
-          <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
-            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-location-dot mr-1.5"></i> UNLOADING LOC</h4>
+          <div class="space-y-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+            <h4 class="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-location-dot mr-1.5"></i> UNLOADING LOC</h4>
             <div class="flex items-center space-x-1.5">
               <input type="text" id="newUnloadingInput" placeholder="Gudang bongkar..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <button onclick="addNewMasterItem('unloading')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
@@ -412,9 +414,7 @@
         document.getElementById('userRoleBadge').innerText = foundUser.role;
         errorMsg.classList.add('hidden');
 
-        // ATUR HAK AKSES BERDASARKAN 3 ROLE: Owner, Assist, Staff
         applyRolePermissions();
-
         fetchDatabaseData();
       } else {
         errorMsg.classList.remove('hidden');
@@ -430,9 +430,8 @@
         btnMaster.style.display = "flex";
       } else if (loggedInUser.role === "Assist") {
         btnDb.style.display = "flex";
-        btnMaster.style.display = "none"; // Assist tidak punya akses Master Control
+        btnMaster.style.display = "none";
       } else if (loggedInUser.role === "Staff") {
-        // Staff hanya memunculkan Form Input saja (Database & Master ditutup)
         btnDb.style.display = "none";
         btnMaster.style.display = "none";
         switchTab('form');
@@ -454,12 +453,48 @@
     }
 
     function renderAppUI() {
-      document.getElementById('driver').innerHTML = '<option value="">-- Pilih Driver --</option>' + driverList.map(d => `<option value="${d}">${d}</option>`).join('');
-      document.getElementById('coDriver').innerHTML = '<option value="">-- Pilih Co-Driver --</option>' + coDriverList.map(c => `<option value="${c}">${c}</option>`).join('');
-      document.getElementById('kategoriHeader').innerHTML = kategoriHeaderList.map(k => `<option value="${k}">${k}</option>`).join('');
-      document.getElementById('vehicle').innerHTML = '<option value="">-- Pilih Plat --</option>' + vehicleList.map(v => `<option value="${v}">${v}</option>`).join('');
-      document.getElementById('loadingLocation').innerHTML = '<option value="">-- Pilih Muat --</option>' + loadingLocations.map(l => `<option value="${l}">${l}</option>`).join('');
-      document.getElementById('unloadingLocation').innerHTML = '<option value="">-- Pilih Bongkar --</option>' + unloadingLocations.map(u => `<option value="${u}">${u}</option>`).join('');
+      // Jangan render ulang dropdown form jika user sedang berada di tab form dan form sedang diisi/aktif agar tidak mereset input
+      const driverSelect = document.getElementById('driver');
+      const currentDriverVal = driverSelect.value;
+      if (driverSelect.options.length <= 1) {
+        driverSelect.innerHTML = '<option value="">-- Pilih Driver --</option>' + driverList.map(d => `<option value="${d}">${d}</option>`).join('');
+        if (currentDriverVal) driverSelect.value = currentDriverVal;
+      }
+
+      const coDriverSelect = document.getElementById('coDriver');
+      const currentCoDriverVal = coDriverSelect.value;
+      if (coDriverSelect.options.length <= 1) {
+        coDriverSelect.innerHTML = '<option value="">-- Pilih Co-Driver --</option>' + coDriverList.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (currentCoDriverVal) coDriverSelect.value = currentCoDriverVal;
+      }
+
+      const katSelect = document.getElementById('kategoriHeader');
+      const currentKatVal = katSelect.value;
+      if (katSelect.options.length <= 1) {
+        katSelect.innerHTML = kategoriHeaderList.map(k => `<option value="${k}">${k}</option>`).join('');
+        if (currentKatVal) katSelect.value = currentKatVal;
+      }
+
+      const vehSelect = document.getElementById('vehicle');
+      const currentVehVal = vehSelect.value;
+      if (vehSelect.options.length <= 1) {
+        vehSelect.innerHTML = '<option value="">-- Pilih Plat --</option>' + vehicleList.map(v => `<option value="${v}">${v}</option>`).join('');
+        if (currentVehVal) vehSelect.value = currentVehVal;
+      }
+
+      const loadSelect = document.getElementById('loadingLocation');
+      const currentLoadVal = loadSelect.value;
+      if (loadSelect.options.length <= 1) {
+        loadSelect.innerHTML = '<option value="">-- Pilih Muat --</option>' + loadingLocations.map(l => `<option value="${l}">${l}</option>`).join('');
+        if (currentLoadVal) loadSelect.value = currentLoadVal;
+      }
+
+      const unloadSelect = document.getElementById('unloadingLocation');
+      const currentUnloadVal = unloadSelect.value;
+      if (unloadSelect.options.length <= 1) {
+        unloadSelect.innerHTML = '<option value="">-- Pilih Bongkar --</option>' + unloadingLocations.map(u => `<option value="${u}">${u}</option>`).join('');
+        if (currentUnloadVal) unloadSelect.value = currentUnloadVal;
+      }
 
       document.getElementById('userMasterList').innerHTML = userList.map((u, i) => `
         <div class="flex justify-between items-center bg-slate-800 px-2 py-1.5 rounded text-xs">
@@ -550,6 +585,7 @@
       showSuccessModal();
     }
 
+    // Auto-sync hanya memperbarui data tabel di background TANPA mengganggu form input aktif
     async function fetchDatabaseData() {
       try {
         const response = await fetch(GSHEET_API_URL + "?action=getdata");
@@ -572,7 +608,6 @@
             if (result.master.unloading && result.master.unloading.length > 0) unloadingLocations = result.master.unloading;
           }
 
-          renderAppUI();
           renderDatabaseTable();
         }
       } catch (err) {
@@ -580,28 +615,28 @@
       }
     }
 
+    // Interval background sync setiap 10 detik agar jauh lebih stabil dan tidak reaktif berlebihan
     setInterval(() => {
       if (loggedInUser) {
         fetchDatabaseData();
       }
-    }, 5000);
+    }, 10000);
 
     setDefaultDate();
     renderAppUI();
 
     function switchTab(tab) {
-      // Jika login sebagai Staff, cegah buka tab selain form
       if (loggedInUser && loggedInUser.role === "Staff" && tab !== 'form') {
         return;
       }
 
       ['tabForm', 'tabDb', 'tabMaster'].forEach(t => document.getElementById(t).classList.add('hidden'));
       ['btnTabForm', 'btnTabDb', 'btnTabMaster'].forEach(b => {
-        document.getElementById(b).className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center";
+        document.getElementById(b).className = "px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center whitespace-nowrap";
       });
 
       document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
-      document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center";
+      document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center whitespace-nowrap";
 
       if (tab === 'db') {
         fetchDatabaseData();
@@ -625,7 +660,7 @@
         container.classList.remove('hidden');
         placeholder.classList.add('hidden');
         action.classList.remove('hidden');
-        action.innerHTML = '<button type="button" onclick="takeSnapshot()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow"><i class="fa-solid fa-camera-retro mr-1"></i> Ambil Foto (Snap)</button>';
+        action.innerHTML = '<button type="button" onclick="takeSnapshot()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2 rounded-xl text-xs sm:text-sm transition shadow"><i class="fa-solid fa-camera-retro mr-1"></i> Ambil Foto (Snap)</button>';
       } catch (err) {
         alert("Gagal akses kamera: " + err.message);
       }
@@ -658,7 +693,7 @@
 
       container.classList.add('hidden');
       canvas.classList.remove('hidden');
-      action.innerHTML = '<span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-circle-check"></i> Foto Siap Kirim</span> <button type="button" onclick="startCamera()" class="ml-2 text-xs bg-slate-700 px-3 py-1.5 rounded text-white font-medium">Ulangi Kamera</button>';
+      action.innerHTML = '<span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-circle-check"></i> Foto Siap Kirim</span> <button type="button" onclick="startCamera()" class="ml-2 text-xs bg-slate-700 px-3 py-1.5 rounded text-white font-medium">Ulangi</button>';
     }
 
     function retakePhoto() {
@@ -747,7 +782,6 @@
     }
 
     async function deleteRecord(index) {
-      // Hanya Owner yang boleh menghapus baris data
       if (!loggedInUser || loggedInUser.role !== "Owner") {
         alert("Anda tidak memiliki hak akses untuk menghapus data!");
         return;
