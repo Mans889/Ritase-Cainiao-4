@@ -426,7 +426,7 @@
         document.getElementById('currentUserEmail').innerText = foundUser.email;
         document.getElementById('userRoleBadge').innerText = foundUser.role;
         errorMsg.classList.add('hidden');
-        fetchDatabaseData(true); // Ambil data awal tanpa notifikasi
+        fetchDatabaseData(false); // Ambil data awal TANPA pop-up (silent)
       } else {
         errorMsg.classList.remove('hidden');
       }
@@ -601,7 +601,7 @@
       }
     }
 
-    // Fungsi fetch data (bisa silent / tanpa pop-up dengan parameter showPopup = false)
+    // Fungsi fetch data (hanya munculkan pop-up jika parameter showPopup bernilai true, misal saat klik tombol Synchronize manual)
     async function fetchDatabaseData(showPopup = false) {
       try {
         const response = await fetch(GSHEET_API_URL + "?action=getdata");
@@ -618,7 +618,7 @@
       }
     }
 
-    // AUTO-SYNC SILENT DI BELAKANG LAYAR TIAP 5 DETIK (TANPA POPUP)
+    // AUTO-SYNC SILENT DI BELAKANG LAYAR TIAP 5 DETIK (DIJAMIN TANPA POP-UP)
     setInterval(() => {
       if (loggedInUser) {
         fetchDatabaseData(false);
