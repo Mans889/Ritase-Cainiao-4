@@ -16,8 +16,11 @@
   <!-- HALAMAN LOGIN -->
   <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
-      <div class="w-16 h-16 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mx-auto shadow-inner">
-        <i class="fa-solid fa-truck-fast"></i>
+      <!-- Logo Diperbesar & Ditambahkan ke Menu Login (Poin 5) -->
+      <div class="flex items-center justify-center space-x-2 mb-2">
+        <div class="bg-white px-2.5 py-1 rounded-xl shadow-lg flex items-center justify-center">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTudPr-kpZPPau1HGN55b5y6Z5EekweEAPRVlZUkviXYiFxY3MFz7z_Z6l7&s=10" alt="Logo ASSA" class="h-10 w-auto object-contain">
+        </div>
       </div>
       <div>
         <h2 class="text-xl font-bold text-white mb-1">Login Sistem Ritase</h2>
@@ -57,11 +60,12 @@
     <div class="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex flex-col sm:flex-row items-center justify-between gap-2">
       <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
         <div class="flex items-center space-x-2">
-          <div class="bg-white px-1.5 py-0.5 rounded-lg shadow flex items-center justify-center">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTudPr-kpZPPau1HGN55b5y6Z5EekweEAPRVlZUkviXYiFxY3MFz7z_Z6l7&s=10" alt="Logo ASSA" class="h-5 sm:h-6 w-auto object-contain">
+          <!-- Logo Diperbesar (Poin 5) -->
+          <div class="bg-white px-2 py-1 rounded-xl shadow flex items-center justify-center">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTudPr-kpZPPau1HGN55b5y6Z5EekweEAPRVlZUkviXYiFxY3MFz7z_Z6l7&s=10" alt="Logo ASSA" class="h-8 sm:h-9 w-auto object-contain">
           </div>
           <div>
-            <h1 class="text-xs font-bold text-white tracking-wide">Ritase Cai Niao 4</h1>
+            <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">Ritase Cai Niao 4</h1>
             <p class="text-[9px] text-slate-400">Outbound ASSA Live</p>
           </div>
         </div>
@@ -205,7 +209,7 @@
               <div id="cameraContainer" class="relative w-full h-56 sm:h-64 bg-black rounded-xl overflow-hidden hidden">
                 <video id="videoElement" autoplay playsinline class="w-full h-full object-cover"></video>
                 <div id="liveWatermark" class="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] sm:text-[11px] font-mono px-2 py-1 rounded">
-                  TIMESTAMP: 23-10-2026 21:30:00
+                  TIMESTAMP: 24-10-2026 21:30:00
                 </div>
               </div>
               <canvas id="canvasElement" class="w-full h-56 sm:h-64 object-cover rounded-xl hidden"></canvas>
@@ -416,9 +420,13 @@
       const timeStr = `${hours}:${minutes}:${seconds}`;
       const waktuInput = document.getElementById('waktuOtomatis');
       if (waktuInput) waktuInput.value = timeStr;
-      const tglBekerja = document.getElementById('tanggalBekerja').value || '2026-10-24';
+      
+      const rawDate = document.getElementById('tanggalBekerja').value || '2026-10-24';
+      const parts = rawDate.split('-');
+      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
+      
       const watermark = document.getElementById('liveWatermark');
-      if (watermark) watermark.innerText = `TIMESTAMP: ${tglBekerja} ${timeStr}`;
+      if (watermark) watermark.innerText = `TIMESTAMP: ${formattedDateDMY} ${timeStr}`;
     }
 
     setInterval(() => {
@@ -487,14 +495,18 @@
       updateTimestampDisplay();
     }
 
-    // Poin 5: Sinkronisasi tahapan, status Done, dan perhitungan Rit secara otomatis
+    // Poin 3: Logika dropdown tahapan (hitamkan yang sudah dipilih, lanjut ke berikutnya, reset jika semua done ke rit selanjutnya)
     function onVehicleOrDateChange() {
-      const tgl = document.getElementById('tanggalBekerja').value;
+      const rawDate = document.getElementById('tanggalBekerja').value;
+      if (!rawDate) return;
+      const parts = rawDate.split('-');
+      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY untuk pencocokan database
+      
       const veh = document.getElementById('vehicle').value;
       const tahapSelect = document.getElementById('tahap');
       const ritBadge = document.getElementById('ritBadge');
       
-      if (!tgl || !veh) return;
+      if (!veh) return;
 
       const stages = [
         { val: "arrivalMuat", label: "Arrival Muat" },
@@ -505,8 +517,7 @@
         { val: "finishUnload", label: "Finish Unload" }
       ];
 
-      // Cari record berdasarkan tanggal & kendaraan untuk melacak rit aktif
-      let records = databaseData.filter(i => i.tanggal === tgl && i.vehicle === veh);
+      let records = databaseData.filter(i => i.tanggal === formattedDateDMY && i.vehicle === veh);
       let activeRit = 1;
 
       if (records.length > 0) {
@@ -546,7 +557,6 @@
         tahapSelect.appendChild(opt);
       });
 
-      // Pilih opsi pertama yang belum done secara otomatis
       let firstAvailable = Array.from(tahapSelect.options).find(o => !o.disabled);
       if (firstAvailable) {
         tahapSelect.value = firstAvailable.value;
@@ -859,17 +869,17 @@
 
       const rawDate = document.getElementById('tanggalBekerja').value;
       const parts = rawDate.split('-');
-      const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`; // Poin 2: Format DD-MM-YYYY
       const tahapVal = document.getElementById('tahap').value;
       const selectedVehicle = document.getElementById('vehicle').value;
 
-      let existingRecord = databaseData.find(item => item.tanggal === formattedDate && item.vehicle === selectedVehicle && item.rit === currentActiveRit);
+      let existingRecord = databaseData.find(item => item.tanggal === formattedDateDMY && item.vehicle === selectedVehicle && item.rit === currentActiveRit);
 
       const currentTime = document.getElementById('waktuOtomatis').value;
       const jobOrderVal = document.getElementById('jobOrder').value.trim() || 'JO-';
 
       let payload = {
-        tanggal: formattedDate,
+        tanggal: formattedDateDMY,
         driver: document.getElementById('driver').value,
         coDriver: document.getElementById('coDriver').value,
         kategori: document.getElementById('kategoriHeader').value,
@@ -880,12 +890,12 @@
         unloadingLocation: document.getElementById('unloadingLocation').value,
         jobOrder: jobOrderVal,
         remarks: document.getElementById('remarks').value || '',
-        arrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", fotoArrivalMuat: existingRecord ? existingRecord.fotoArrivalMuat : "",
-        startLoad: existingRecord ? existingRecord.startLoad : "", fotoStartLoad: existingRecord ? existingRecord.fotoStartLoad : "",
-        finishLoad: existingRecord ? existingRecord.finishLoad : "", fotoFinishLoad: existingRecord ? existingRecord.fotoFinishLoad : "",
-        arrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", fotoArrivalBongkar: existingRecord ? existingRecord.fotoArrivalBongkar : "",
-        startUnload: existingRecord ? existingRecord.startUnload : "", fotoStartUnload: existingRecord ? existingRecord.fotoStartUnload : "",
-        finishUnload: existingRecord ? existingRecord.finishUnload : "", fotoFinishUnload: existingRecord ? existingRecord.fotoFinishUnload : ""
+        arrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", existingArrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", fotoArrivalMuat: "",
+        startLoad: existingRecord ? existingRecord.startLoad : "", existingStartLoad: existingRecord ? existingRecord.startLoad : "", fotoStartLoad: "",
+        finishLoad: existingRecord ? existingRecord.finishLoad : "", existingFinishLoad: existingRecord ? existingRecord.finishLoad : "", fotoFinishLoad: "",
+        arrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", existingArrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", fotoArrivalBongkar: "",
+        startUnload: existingRecord ? existingRecord.startUnload : "", existingStartUnload: existingRecord ? existingRecord.startUnload : "", fotoStartUnload: "",
+        finishUnload: existingRecord ? existingRecord.finishUnload : "", existingFinishUnload: existingRecord ? existingRecord.finishUnload : "", fotoFinishUnload: ""
       };
 
       payload[tahapVal] = currentTime;
@@ -932,7 +942,7 @@
       capturedPhotoData = null;
     }
 
-    // Poin 2: Fungsi update JO langsung dari input di tabel database view tanpa buat row baru
+    // Poin 1: Update JO langsung di row yang sama tanpa buat row baru
     async function updateJobOrderInline(index, newJoValue) {
       databaseData[index].jobOrder = newJoValue.trim() || 'JO-';
       const item = databaseData[index];
@@ -942,9 +952,13 @@
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(item)
+          body: JSON.stringify({
+            action: "updateJO",
+            rowIndex: item.rowIndex,
+            kategori: item.kategori,
+            jobOrder: item.jobOrder
+          })
         });
-        console.log("Job Order berhasil di-update secara sinkron!");
       } catch(e) {
         console.error("Gagal update JO:", e);
       }
@@ -1009,7 +1023,6 @@
       filtered.forEach((item) => {
         const originalIndex = databaseData.indexOf(item);
         
-        // Poin 1: Pastikan foto bisa di-view langsung di web (link membuka tab baru)
         const cellInput = (val, foto) => {
           return `
             <td class="p-2.5 whitespace-nowrap">
