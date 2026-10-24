@@ -238,8 +238,9 @@
             <textarea id="remarks" rows="2" placeholder="Catatan kendala atau informasi lapangan..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition"></textarea>
           </div>
 
+          <!-- TOMBOL SUBMIT DIGANTI JADI "Submit Data" -->
           <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg text-sm sm:text-base">
-            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Submit & Sinkron ke GSheet & GDrive
+            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Submit Data
           </button>
         </form>
       </div>
@@ -592,7 +593,6 @@
       return dateStr;
     }
 
-    // Fungsi untuk memformat waktu agar bersih menjadi HH:MM:SS
     function formatTimeToHms(timeStr) {
       if (!timeStr) return "-";
       let str = String(timeStr).trim();
@@ -1076,8 +1076,8 @@
         const cellInput = (val, foto) => {
           const cleanTime = formatTimeToHms(val);
           return `
-            <td class="p-2.5 whitespace-nowrap">
-              <div class="flex items-center space-x-1.5">
+            <td class="p-2.5 whitespace-nowrap text-center">
+              <div class="flex items-center justify-center space-x-1.5">
                 <span class="font-mono text-[11px] text-white">${cleanTime}</span>
                 ${foto ? `<a href="${foto}" target="_blank" class="text-blue-400 hover:text-blue-300 text-[10px] underline font-bold" title="Buka Foto"><i class="fa-solid fa-camera"></i> View</a>` : '<span class="text-slate-600 text-[10px]">-</span>'}
               </div>
@@ -1092,7 +1092,7 @@
         ` : '';
 
         tbody.innerHTML += `
-          <tr class="hover:bg-slate-750 border-b border-slate-700/50">
+          <tr class="hover:bg-slate-750 border-b border-slate-700/50 text-center">
             <td class="p-3 font-mono text-blue-300 font-bold">${displayDate}</td>
             <td class="p-3"><span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded text-[10px]">${item.kategori}</span></td>
             <td class="p-3 font-semibold text-blue-400">${item.vehicle}</td>
@@ -1106,8 +1106,8 @@
             ${cellInput(item.startUnload, item.fotoStartUnload)}
             ${cellInput(item.finishUnload, item.fotoFinishUnload)}
             <td class="p-3 text-rose-200">${item.unloadingLocation}</td>
-            <td class="p-3">
-              <input type="text" value="${item.jobOrder}" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 focus:outline-none focus:border-blue-500">
+            <td class="p-3 text-center">
+              <input type="text" value="${item.jobOrder}" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 text-center focus:outline-none focus:border-blue-500">
             </td>
             <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
