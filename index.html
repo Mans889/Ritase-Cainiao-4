@@ -493,6 +493,7 @@
       updateTimestampDisplay();
     }
 
+    // Logika Penguncian Tahapan Sesuai Nopol & Rit
     function onVehicleOrDateChange() {
       const rawDate = document.getElementById('tanggalBekerja').value;
       if (!rawDate) return;
@@ -883,12 +884,10 @@
       const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`;
       const tahapVal = document.getElementById('tahap').value;
       const selectedVehicle = document.getElementById('vehicle').value;
-
-      let existingRecord = databaseData.find(item => item.tanggal === formattedDateDMY && item.vehicle === selectedVehicle && item.rit === currentActiveRit);
-
       const currentTime = document.getElementById('waktuOtomatis').value;
       const jobOrderVal = document.getElementById('jobOrder').value.trim() || 'JO-';
 
+      // Payload khusus pengiriman bertahap agar tidak menimpa data tahap lain
       let payload = {
         tanggal: formattedDateDMY,
         driver: document.getElementById('driver').value,
@@ -901,33 +900,37 @@
         unloadingLocation: document.getElementById('unloadingLocation').value,
         jobOrder: jobOrderVal,
         remarks: document.getElementById('remarks').value || '',
-        arrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", existingArrivalMuat: existingRecord ? existingRecord.arrivalMuat : "", fotoArrivalMuat: "",
-        startLoad: existingRecord ? existingRecord.startLoad : "", existingStartLoad: existingRecord ? existingRecord.startLoad : "", fotoStartLoad: "",
-        finishLoad: existingRecord ? existingRecord.finishLoad : "", existingFinishLoad: existingRecord ? existingRecord.finishLoad : "", fotoFinishLoad: "",
-        arrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", existingArrivalBongkar: existingRecord ? existingRecord.arrivalBongkar : "", fotoArrivalBongkar: "",
-        startUnload: existingRecord ? existingRecord.startUnload : "", existingStartUnload: existingRecord ? existingRecord.startUnload : "", fotoStartUnload: "",
-        finishUnload: existingRecord ? existingRecord.finishUnload : "", existingFinishUnload: existingRecord ? existingRecord.finishUnload : "", fotoFinishUnload: ""
+        tahap: tahapVal,
+        waktu: currentTime,
+        foto: capturedPhotoData
       };
 
-      payload[tahapVal] = currentTime;
-      payload['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = capturedPhotoData;
-
+      showSuccessModal();
+      
+      // Update lokal databaseData agar UI langsung merespon tanpa nunggu fetch
+      let existingRecord = databaseData.find(item => item.tanggal === formattedDateDMY && item.vehicle === selectedVehicle && Number(item.rit) === Number(currentActiveRit));
       if (existingRecord) {
-        existingRecord.driver = payload.driver;
-        existingRecord.coDriver = payload.coDriver;
-        existingRecord.kategori = payload.kategori;
-        existingRecord.tipeUnit = payload.tipeUnit;
-        existingRecord.loadingLocation = payload.loadingLocation;
-        existingRecord.unloadingLocation = payload.unloadingLocation;
         existingRecord[tahapVal] = currentTime;
         existingRecord['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = capturedPhotoData;
         if(jobOrderVal !== 'JO-') existingRecord.jobOrder = jobOrderVal;
-        existingRecord.remarks = payload.remarks || existingRecord.remarks;
       } else {
-        databaseData.unshift(payload);
+        let newRec = {
+          tanggal: formattedDateDMY,
+          vehicle: selectedVehicle,
+          rit: currentActiveRit,
+          driver: payload.driver,
+          coDriver: payload.coDriver,
+          kategori: payload.kategori,
+          tipeUnit: payload.tipeUnit,
+          loadingLocation: payload.loadingLocation,
+          unloadingLocation: payload.unloadingLocation,
+          jobOrder: jobOrderVal,
+          remarks: payload.remarks
+        };
+        newRec[tahapVal] = currentTime;
+        databaseData.unshift(newRec);
       }
 
-      showSuccessModal();
       renderDatabaseTable();
       onVehicleOrDateChange();
 
