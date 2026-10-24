@@ -493,7 +493,7 @@
       updateTimestampDisplay();
     }
 
-    // Logika Penguncian Tahapan Sesuai Nopol & Rit secara Presisi
+    // Logika Penguncian Tahapan Sesuai Nopol & Rit secara Presisi Tanpa Balik ke Selesai
     function onVehicleOrDateChange() {
       const rawDate = document.getElementById('tanggalBekerja').value;
       if (!rawDate) return;
@@ -515,7 +515,6 @@
         { val: "finishUnload", label: "Finish Unload" }
       ];
 
-      // Filter data sesuai Tanggal, Nopol, dan cari Rit aktif tertinggi
       let records = databaseData.filter(i => String(i.tanggal).trim() === String(formattedDateDMY).trim() && String(i.vehicle).trim() === String(veh).trim());
       let activeRit = 1;
 
@@ -547,7 +546,7 @@
         if (isDone) {
           opt.innerText = `${st.label} (Done)`;
           opt.disabled = true;
-          opt.style.color = "#64748b";
+          opt.style.color = "#64748b"; // Warna gelap / terkunci
           opt.style.backgroundColor = "#020617";
         } else {
           opt.innerText = st.label;
@@ -558,9 +557,12 @@
         tahapSelect.appendChild(opt);
       });
 
+      // Otomatis arahkan ke tahap pertama yang BELUM SELESAI (tidak disabled)
       let firstAvailable = Array.from(tahapSelect.options).find(o => !o.disabled);
       if (firstAvailable) {
         tahapSelect.value = firstAvailable.value;
+      } else {
+        tahapSelect.value = stages[stages.length - 1].val;
       }
     }
 
