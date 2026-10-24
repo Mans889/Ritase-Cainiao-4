@@ -41,16 +41,23 @@
           <p class="text-[10px] text-slate-400">Tracking Ritase Outbound ASSA</p>
         </div>
       </div>
-      <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-center">
-        <button onclick="switchTab('form')" id="btnTabForm" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center">
-          <i class="fa-solid fa-pen-to-square mr-1"></i> Form Input
+
+      <!-- Tombol Synchronize & Navigasi Tab -->
+      <div class="flex items-center space-x-2 flex-wrap justify-center">
+        <button onclick="fetchDatabaseData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-bold rounded-lg shadow transition flex items-center">
+          <i class="fa-solid fa-rotate mr-1.5"></i> Synchronize
         </button>
-        <button onclick="switchTab('db')" id="btnTabDb" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center">
-          <i class="fa-solid fa-database mr-1"></i> Database & GSheet
-        </button>
-        <button onclick="switchTab('master')" id="btnTabMaster" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center">
-          <i class="fa-solid fa-gear mr-1"></i> Master Control
-        </button>
+        <div class="flex items-center space-x-1.5">
+          <button onclick="switchTab('form')" id="btnTabForm" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center">
+            <i class="fa-solid fa-pen-to-square mr-1"></i> Form Input
+          </button>
+          <button onclick="switchTab('db')" id="btnTabDb" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center">
+            <i class="fa-solid fa-database mr-1"></i> Database & GSheet
+          </button>
+          <button onclick="switchTab('master')" id="btnTabMaster" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center">
+            <i class="fa-solid fa-gear mr-1"></i> Master Control
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -267,6 +274,23 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          
+          <!-- KARTU MANAJEMEN USER & ROLE -->
+          <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
+            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-users-gear mr-1.5"></i> USER & ROLE MANAGEMENT</h4>
+            <div class="space-y-2">
+              <input type="email" id="newUserInput" placeholder="email@domain.com" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
+              <div class="flex items-center space-x-1.5">
+                <select id="newUserRole" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-amber-300 font-semibold w-full">
+                  <option value="Full Access (Owner)">Full Access (Owner)</option>
+                  <option value="Standard Access">Standard Access</option>
+                </select>
+                <button onclick="addNewUser()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
+              </div>
+            </div>
+            <div id="userMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
+          </div>
+
           <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
             <h4 class="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-user mr-1.5"></i> NAMA DRIVER</h4>
             <div class="flex items-center space-x-1.5">
@@ -320,6 +344,7 @@
             </div>
             <div id="unloadingMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
           </div>
+
         </div>
       </div>
     </div>
@@ -351,6 +376,9 @@
       document.getElementById('customModal').classList.add('hidden');
     }
 
+    let userList = [
+      { email: "firmangustiadi08@gmail.com", role: "Full Access (Owner)" }
+    ];
     let driverList = ["Firman Gustiadi", "Budi Santoso", "Joko Widodo", "Ahmad Yani"];
     let coDriverList = ["Ridwan", "Slamet", "Ujang", "Dedi"];
     let kategoriHeaderList = ["Outbound", "Trial unit 40FT & 45FT", "Migrasi Clove", "Unit Assesment 45ft", "Outbound Cai Niao", "Outbound Clove"];
@@ -379,12 +407,41 @@
       document.getElementById('loadingLocation').innerHTML = '<option value="">-- Pilih Muat --</option>' + loadingLocations.map(l => `<option value="${l}">${l}</option>`).join('');
       document.getElementById('unloadingLocation').innerHTML = '<option value="">-- Pilih Bongkar --</option>' + unloadingLocations.map(u => `<option value="${u}">${u}</option>`).join('');
 
+      document.getElementById('userMasterList').innerHTML = userList.map((u, i) => `
+        <div class="flex justify-between items-center bg-slate-800 px-2 py-1.5 rounded text-xs">
+          <div>
+            <span class="text-white font-medium block">${u.email}</span>
+            <span class="text-[10px] text-amber-300 font-semibold">${u.role}</span>
+          </div>
+          <button onclick="removeUser(${i})" class="text-red-400 font-bold px-1.5">×</button>
+        </div>
+      `).join('');
+
       document.getElementById('driverMasterList').innerHTML = driverList.map((d, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${d}</span><button onclick="removeItem('driver', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
       document.getElementById('coDriverMasterList').innerHTML = coDriverList.map((c, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${c}</span><button onclick="removeItem('coDriver', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
       document.getElementById('kategoriMasterList').innerHTML = kategoriHeaderList.map((k, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${k}</span><button onclick="removeItem('kategori', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
       document.getElementById('vehicleMasterList').innerHTML = vehicleList.map((v, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${v}</span><button onclick="removeItem('vehicle', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
       document.getElementById('loadingMasterList').innerHTML = loadingLocations.map((l, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${l}</span><button onclick="removeItem('loading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
       document.getElementById('unloadingMasterList').innerHTML = unloadingLocations.map((u, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${u}</span><button onclick="removeItem('unloading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
+    }
+
+    function addNewUser() {
+      const email = document.getElementById('newUserInput').value.trim();
+      const role = document.getElementById('newUserRole').value;
+      if (email) {
+        userList.push({ email, role });
+        document.getElementById('newUserInput').value = '';
+        renderAppUI();
+        showSuccessModal();
+      } else {
+        alert("Masukkan email user terlebih dahulu!");
+      }
+    }
+
+    function removeUser(idx) {
+      userList.splice(idx, 1);
+      renderAppUI();
+      showSuccessModal();
     }
 
     function onVehicleOrDateChange() {
@@ -504,6 +561,7 @@
         if (result.status === "success") {
           databaseData = result.data;
           renderDatabaseTable();
+          showSuccessModal();
         }
       } catch (err) {
         console.error("Gagal ambil data database:", err);
@@ -652,13 +710,11 @@
       if (confirm("Hapus baris data ini dari web dan Google Sheet?")) {
         const item = databaseData[index];
         
-        // Hapus dari array lokal
         databaseData.splice(index, 1);
         renderDatabaseTable();
         onVehicleOrDateChange();
         showSuccessModal();
 
-        // Kirim nomor baris (rowIndex) langsung ke Google Apps Script
         try {
           await fetch(GSHEET_API_URL, {
             method: "POST",
