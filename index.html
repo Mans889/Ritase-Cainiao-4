@@ -476,7 +476,7 @@
       } else if (loggedInUser.role === "Staff" || loggedInUser.role === "User") {
         if (btnDb) btnDb.style.display = "none";
         if (btnMaster) btnMaster.style.display = "none";
-        if (jobOrderInput) jobOrderInput.disabled = false; // Bisa diedit sesuai role
+        if (jobOrderInput) jobOrderInput.disabled = false;
       }
     }
 
@@ -501,7 +501,6 @@
       updateTimestampDisplay();
     }
 
-    // LOGIKA PENGUNCIAN TAHAPAN (DISABLED & MENGHITAM JIKA SUDAH SELESAI)
     function onVehicleOrDateChange() {
       const rawDate = document.getElementById('tanggalBekerja').value;
       if (!rawDate) return;
@@ -591,6 +590,24 @@
         }
       }
       return dateStr;
+    }
+
+    // Fungsi untuk memformat waktu agar bersih menjadi HH:MM:SS
+    function formatTimeToHms(timeStr) {
+      if (!timeStr) return "-";
+      let str = String(timeStr).trim();
+      if (str.includes("T")) {
+        let timePart = str.split("T")[1];
+        if (timePart) {
+          return timePart.split(".")[0];
+        }
+      }
+      if (str.includes(" ")) {
+        let parts = str.split(" ");
+        let timePart = parts.find(p => p.includes(":"));
+        if (timePart) return timePart.split(".")[0];
+      }
+      return str.split(".")[0];
     }
 
     function renderAppUI(isFullRender = false) {
@@ -1057,10 +1074,11 @@
         const displayDate = formatDateToDMY(item.tanggal);
         
         const cellInput = (val, foto) => {
+          const cleanTime = formatTimeToHms(val);
           return `
             <td class="p-2.5 whitespace-nowrap">
               <div class="flex items-center space-x-1.5">
-                <span class="font-mono text-[11px] text-white">${val || '-'}</span>
+                <span class="font-mono text-[11px] text-white">${cleanTime}</span>
                 ${foto ? `<a href="${foto}" target="_blank" class="text-blue-400 hover:text-blue-300 text-[10px] underline font-bold" title="Buka Foto"><i class="fa-solid fa-camera"></i> View</a>` : '<span class="text-slate-600 text-[10px]">-</span>'}
               </div>
             </td>
@@ -1091,7 +1109,7 @@
             <td class="p-3">
               <input type="text" value="${item.jobOrder}" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 focus:outline-none focus:border-blue-500">
             </td>
-            <td class="p-3 font-semibold text-emerald-300">${item.donor || item.driver || '-'}</td>
+            <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
             ${deleteButtonCell}
           </tr>`;
