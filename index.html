@@ -13,7 +13,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
 
-  <!-- HALAMAN LOGIN (MUNCUL PERTAMA KALI) -->
+  <!-- HALAMAN LOGIN -->
   <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
       <div class="w-16 h-16 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mx-auto shadow-inner">
@@ -65,12 +65,11 @@
         </div>
       </div>
 
-      <!-- Tombol Synchronize & Navigasi Tab -->
       <div class="flex items-center space-x-2 flex-wrap justify-center">
         <button onclick="fetchDatabaseData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-bold rounded-lg shadow transition flex items-center">
           <i class="fa-solid fa-rotate mr-1.5"></i> Synchronize
         </button>
-        <div class="flex items-center space-x-1.5">
+        <div id="navTabsContainer" class="flex items-center space-x-1.5">
           <button onclick="switchTab('form')" id="btnTabForm" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center">
             <i class="fa-solid fa-pen-to-square mr-1"></i> Form Input
           </button>
@@ -98,8 +97,8 @@
           </div>
           <div>
             <p class="text-xs text-slate-400">Akun Login Aktif:</p>
-            <p id="currentUserEmail" class="text-sm font-semibold text-white">firmangustiadi08@gmail.com</p>
-            <span id="userRoleBadge" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Full Access (Owner)</span>
+            <p id="currentUserEmail" class="text-sm font-semibold text-white">-</p>
+            <span id="userRoleBadge" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">-</span>
           </div>
         </div>
         <button onclick="logoutUser()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-slate-300 transition">Keluar / Ganti Akun</button>
@@ -107,18 +106,15 @@
 
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 sm:p-8 shadow-xl space-y-6">
         
-        <!-- Driver & Co-Driver -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-700">
           <div>
             <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-user mr-1"></i> Nama Driver</label>
             <select id="driver" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
-              <!-- Rendered by JS -->
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-user-group mr-1"></i> Co-Driver</label>
             <select id="coDriver" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
-              <!-- Rendered by JS -->
             </select>
           </div>
         </div>
@@ -129,7 +125,6 @@
             <span class="text-[10px] text-slate-400 font-normal">Data otomatis masuk ke sheet tujuan</span>
           </label>
           <select id="kategoriHeader" required class="w-full bg-slate-900 border border-blue-600/60 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-400 transition shadow">
-            <!-- Rendered by JS -->
           </select>
         </div>
 
@@ -141,7 +136,6 @@
         </div>
 
         <form id="ritaseForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
-          
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-amber-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-calendar-days mr-1"></i> Tanggal Bekerja</label>
@@ -150,12 +144,10 @@
             <div></div>
           </div>
 
-          <!-- Plat Nomor & Tipe Unit Bererdampingan -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/40 p-4 rounded-xl border border-slate-700">
             <div>
               <label class="block text-xs font-semibold text-blue-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-truck mr-1"></i> Plat Nomor Kendaraan</label>
               <select id="vehicle" required onchange="onVehicleOrDateChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
-                <!-- Rendered dynamically -->
               </select>
             </div>
             <div>
@@ -169,18 +161,15 @@
             </div>
           </div>
 
-          <!-- Loading Location & Unloading Location Bererdampingan -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-teal-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-warehouse mr-1"></i> Loading Location (Muat)</label>
               <select id="loadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-teal-200 font-medium focus:outline-none focus:border-blue-500 transition">
-                <!-- Rendered by JS -->
               </select>
             </div>
             <div>
               <label class="block text-xs font-semibold text-rose-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-location-dot mr-1"></i> Unloading Location (Bongkar)</label>
               <select id="unloadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-rose-200 font-medium focus:outline-none focus:border-blue-500 transition">
-                <!-- Rendered by JS -->
               </select>
             </div>
           </div>
@@ -188,7 +177,6 @@
           <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Ritase (Tahapan)</label>
             <select id="tahap" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
-              <!-- Rendered dynamically -->
             </select>
           </div>
 
@@ -203,7 +191,6 @@
             </div>
           </div>
 
-          <!-- Camera Section -->
           <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Ambil Foto Bukti Tahapan (Live Camera + Timestamp Wajib)</label>
             <div class="bg-slate-900 border-2 border-dashed border-slate-700 rounded-2xl p-4 text-center relative overflow-hidden">
@@ -278,7 +265,7 @@
                 <th class="p-3 whitespace-nowrap">Job Order</th>
                 <th class="p-3 whitespace-nowrap">Driver</th>
                 <th class="p-3 whitespace-nowrap">Co-Driver</th>
-                <th class="p-3 whitespace-nowrap text-center">Aksi (Hapus)</th>
+                <th id="thHeaderAksi" class="p-3 whitespace-nowrap text-center">Aksi (Hapus)</th>
               </tr>
             </thead>
             <tbody id="dbTableBody" class="divide-y divide-slate-700 text-slate-200"></tbody>
@@ -298,7 +285,6 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           
-          <!-- KARTU MANAJEMEN USER & ROLE -->
           <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
             <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-users-gear mr-1.5"></i> USER & ROLE MANAGEMENT</h4>
             <div class="space-y-2">
@@ -306,7 +292,8 @@
               <div class="flex items-center space-x-1.5">
                 <select id="newUserRole" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-amber-300 font-semibold w-full">
                   <option value="Full Access (Owner)">Full Access (Owner)</option>
-                  <option value="Standard Access">Standard Access</option>
+                  <option value="Staff">Staff</option>
+                  <option value="Driver / User">Driver / User</option>
                 </select>
                 <button onclick="addNewUser()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
               </div>
@@ -399,17 +386,15 @@
       document.getElementById('customModal').classList.add('hidden');
     }
 
-    let userList = [
-      { email: "firmangustiadi08@gmail.com", role: "Full Access (Owner)" }
-    ];
+    let userList = [{ email: "firmangustiadi08@gmail.com", role: "Full Access (Owner)" }];
     let driverList = ["Firman Gustiadi", "Budi Santoso", "Joko Widodo", "Ahmad Yani"];
     let coDriverList = ["Ridwan", "Slamet", "Ujang", "Dedi"];
     let kategoriHeaderList = ["Outbound", "Trial unit 40FT & 45FT", "Migrasi Clove", "Unit Assesment 45ft", "Outbound Cai Niao", "Outbound Clove"];
     let vehicleList = ["B 9018 TEK", "B 9026 TEK", "B 9478 UFY", "B 9479 UFY", "B 9015 UFZ", "B 9116 UFZ"];
     let loadingLocations = ["Gudang Cainiao, Cikarang", "Gudang ILC, KIIC Karawang", "Gudang SFP Lot 41, KIIC Karawang", "Lot 17, KIIC (Homebase)"];
     let unloadingLocations = ["Gudang Lot 41, PPK", "Gudang Lot 41, PPW", "Gudang Lot 41, CLOVE", "Gudang ILC, KIIC"];
+    
     let databaseData = [];
-
     let videoStream = null;
     let capturedPhotoData = null;
     let currentActiveRit = 1;
@@ -426,9 +411,31 @@
         document.getElementById('currentUserEmail').innerText = foundUser.email;
         document.getElementById('userRoleBadge').innerText = foundUser.role;
         errorMsg.classList.add('hidden');
-        fetchDatabaseData(); // Sinkron awal secara silent tanpa pop-up
+
+        // ATUR HAK AKSES BERDASARKAN ROLE
+        applyRolePermissions();
+
+        fetchDatabaseData();
       } else {
         errorMsg.classList.remove('hidden');
+      }
+    }
+
+    function applyRolePermissions() {
+      const btnDb = document.getElementById('btnTabDb');
+      const btnMaster = document.getElementById('btnTabMaster');
+
+      if (loggedInUser.role === "Full Access (Owner)") {
+        btnDb.style.display = "flex";
+        btnMaster.style.display = "flex";
+      } else if (loggedInUser.role === "Staff") {
+        btnDb.style.display = "flex";
+        btnMaster.style.display = "none"; // Staff tidak bisa akses Master Control
+      } else {
+        // Driver / User Biasa (Hanya Form Input saja)
+        btnDb.style.display = "none";
+        btnMaster.style.display = "none";
+        switchTab('form');
       }
     }
 
@@ -472,6 +479,31 @@
       document.getElementById('unloadingMasterList').innerHTML = unloadingLocations.map((u, i) => `<div class="flex justify-between bg-slate-800 px-2 py-1 rounded text-xs"><span>${u}</span><button onclick="removeItem('unloading', ${i})" class="text-red-400 font-bold">×</button></div>`).join('');
     }
 
+    async function saveMasterToCloud() {
+      try {
+        const payload = {
+          action: "saveMaster",
+          master: {
+            users: userList.map(u => u.email + "|" + u.role),
+            drivers: driverList,
+            coDrivers: coDriverList,
+            kategori: kategoriHeaderList,
+            vehicles: vehicleList,
+            loading: loadingLocations,
+            unloading: unloadingLocations
+          }
+        };
+        await fetch(GSHEET_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch(e) {
+        console.error("Gagal simpan master data:", e);
+      }
+    }
+
     function addNewUser() {
       const email = document.getElementById('newUserInput').value.trim();
       const role = document.getElementById('newUserRole').value;
@@ -479,6 +511,7 @@
         userList.push({ email, role });
         document.getElementById('newUserInput').value = '';
         renderAppUI();
+        saveMasterToCloud();
         showSuccessModal();
       } else {
         alert("Masukkan email user terlebih dahulu!");
@@ -488,70 +521,9 @@
     function removeUser(idx) {
       userList.splice(idx, 1);
       renderAppUI();
+      saveMasterToCloud();
       showSuccessModal();
     }
-
-    function onVehicleOrDateChange() {
-      const rawDate = document.getElementById('tanggalBekerja').value;
-      const selectedVehicle = document.getElementById('vehicle').value;
-      if (!rawDate || !selectedVehicle) {
-        currentActiveRit = 1;
-        document.getElementById('ritBadge').innerText = `Rit: 1`;
-        updateTahapDropdown(null);
-        return;
-      }
-
-      const parts = rawDate.split('-');
-      const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-
-      const records = databaseData.filter(i => i.tanggal === formattedDate && i.vehicle === selectedVehicle);
-
-      let maxRit = 1;
-      records.forEach(r => { if(r.rit > maxRit) maxRit = r.rit; });
-
-      let currentRecord = records.find(r => r.rit === maxRit);
-
-      if (currentRecord && currentRecord.finishUnload) {
-        maxRit += 1;
-        currentRecord = null;
-      }
-
-      currentActiveRit = maxRit;
-      document.getElementById('ritBadge').innerText = `Rit: ${currentActiveRit}`;
-
-      updateTahapDropdown(currentRecord);
-    }
-
-    function updateTahapDropdown(record) {
-      const tahapSelect = document.getElementById('tahap');
-      const allStages = [
-        { val: 'arrivalMuat', label: 'Tiba di Lokasi Muat (Arrival Muat)' },
-        { val: 'startLoad', label: 'Mulai Loading (Start Load)' },
-        { val: 'finishLoad', label: 'Selesai Loading (Finish Load)' },
-        { val: 'arrivalBongkar', label: 'Tiba di Lokasi Bongkar (Arrival Bongkar)' },
-        { val: 'startUnload', label: 'Mulai Unloading (Start Unload)' },
-        { val: 'finishUnload', label: 'Selesai Unloading (Finish Unload)' }
-      ];
-
-      let html = '';
-      let firstAvailableSet = false;
-
-      allStages.forEach(stage => {
-        let isDone = record && record[stage.val] && record[stage.val] !== "";
-        if (isDone) {
-          html += `<option value="${stage.val}" disabled class="text-slate-500 bg-slate-950 font-normal">✔ ${stage.label} (Sudah Selesai)</option>`;
-        } else {
-          let selectedAttr = !firstAvailableSet ? 'selected' : '';
-          html += `<option value="${stage.val}" ${selectedAttr} class="text-white font-bold">${stage.label}</option>`;
-          firstAvailableSet = true;
-        }
-      });
-
-      tahapSelect.innerHTML = html;
-    }
-
-    setDefaultDate();
-    renderAppUI();
 
     function addNewMasterItem(type) {
       let val = '';
@@ -562,6 +534,7 @@
       if(type === 'loading') { val = document.getElementById('newLoadingInput').value.trim(); if(val) loadingLocations.push(val); document.getElementById('newLoadingInput').value = ''; }
       if(type === 'unloading') { val = document.getElementById('newUnloadingInput').value.trim(); if(val) unloadingLocations.push(val); document.getElementById('newUnloadingInput').value = ''; }
       renderAppUI();
+      saveMasterToCloud();
       showSuccessModal();
     }
 
@@ -573,19 +546,48 @@
       if(type === 'loading') loadingLocations.splice(idx, 1);
       if(type === 'unloading') unloadingLocations.splice(idx, 1);
       renderAppUI();
+      saveMasterToCloud();
       showSuccessModal();
     }
 
+    async function fetchDatabaseData() {
+      try {
+        const response = await fetch(GSHEET_API_URL + "?action=getdata");
+        const result = await response.json();
+        if (result.status === "success") {
+          databaseData = result.data;
+          
+          if (result.master) {
+            if (result.master.users && result.master.users.length > 0) {
+              userList = result.master.users.map(item => {
+                let parts = item.split("|");
+                return { email: parts[0], role: parts[1] || "Full Access (Owner)" };
+              });
+            }
+            if (result.master.drivers && result.master.drivers.length > 0) driverList = result.master.drivers;
+            if (result.master.coDrivers && result.master.coDrivers.length > 0) coDriverList = result.master.coDrivers;
+            if (result.master.kategori && result.master.kategori.length > 0) kategoriHeaderList = result.master.kategori;
+            if (result.master.vehicles && result.master.vehicles.length > 0) vehicleList = result.master.vehicles;
+            if (result.master.loading && result.master.loading.length > 0) loadingLocations = result.master.loading;
+            if (result.master.unloading && result.master.unloading.length > 0) unloadingLocations = result.master.unloading;
+          }
+
+          renderAppUI();
+          renderDatabaseTable();
+        }
+      } catch (err) {
+        console.error("Gagal ambil data database:", err);
+      }
+    }
+
     setInterval(() => {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('waktuOtomatis').value = `${h}:${m}:${s}`;
-      const d = String(now.getDate()).padStart(2, '0');
-      const mo = String(now.getMonth() + 1).padStart(2, '0');
-      document.getElementById('liveWatermark').innerText = `TIMESTAMP: ${d}-${mo}-${now.getFullYear()} ${h}:${m}:${s}`;
-    }, 1000);
+      if (loggedInUser) {
+        fetchDatabaseData();
+      }
+    }, 5000);
+
+    setDefaultDate();
+    renderAppUI();
 
     function switchTab(tab) {
       ['tabForm', 'tabDb', 'tabMaster'].forEach(t => document.getElementById(t).classList.add('hidden'));
@@ -600,27 +602,6 @@
         fetchDatabaseData();
       }
     }
-
-    // FUNGSI FETCH DATA SEKARANG 100% SILENT (TIDAK ADA POPUP SAMA SEKALI SAAT SYNC)
-    async function fetchDatabaseData() {
-      try {
-        const response = await fetch(GSHEET_API_URL + "?action=getdata");
-        const result = await response.json();
-        if (result.status === "success") {
-          databaseData = result.data;
-          renderDatabaseTable();
-        }
-      } catch (err) {
-        console.error("Gagal ambil data database:", err);
-      }
-    }
-
-    // AUTO-SYNC SILENT DI BELAKANG LAYAR TIAP 5 DETIK
-    setInterval(() => {
-      if (loggedInUser) {
-        fetchDatabaseData();
-      }
-    }, 5000);
 
     async function startCamera() {
       const video = document.getElementById('videoElement');
@@ -761,9 +742,14 @@
     }
 
     async function deleteRecord(index) {
+      // Staff dan Driver dicegah agar tidak bisa menghapus
+      if (loggedInUser && loggedInUser.role !== "Full Access (Owner)") {
+        alert("Anda tidak memiliki hak akses untuk menghapus data!");
+        return;
+      }
+
       if (confirm("Hapus baris data ini dari web dan Google Sheet?")) {
         const item = databaseData[index];
-        
         databaseData.splice(index, 1);
         renderDatabaseTable();
         onVehicleOrDateChange();
@@ -789,8 +775,15 @@
     function renderDatabaseTable() {
       const tbody = document.getElementById('dbTableBody');
       const searchInputElem = document.getElementById('searchInput');
+      const thHeaderAksi = document.getElementById('thHeaderAksi');
       const searchQuery = searchInputElem ? searchInputElem.value.toLowerCase() : '';
       tbody.innerHTML = '';
+
+      // Sembunyikan kolom aksi hapus jika bukan Owner
+      const isOwner = loggedInUser && loggedInUser.role === "Full Access (Owner)";
+      if (thHeaderAksi) {
+        thHeaderAksi.style.display = isOwner ? "table-cell" : "none";
+      }
 
       const filtered = databaseData.filter(i => 
         i.tanggal.toLowerCase().includes(searchQuery) || 
@@ -801,24 +794,28 @@
       );
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="17" class="p-4 text-center text-slate-400">Belum ada data tersimpan.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="${isOwner ? 17 : 16}" class="p-4 text-center text-slate-400">Belum ada data tersimpan.</td></tr>`;
         return;
       }
 
       filtered.forEach((item) => {
         const originalIndex = databaseData.indexOf(item);
-
         const cellInput = (val, foto) => {
-          let displayLink = foto;
           return `
             <td class="p-2.5 whitespace-nowrap">
               <div class="flex items-center space-x-1.5">
                 <span class="font-mono text-[11px] text-white">${val || '-'}</span>
-                ${foto ? `<a href="${displayLink}" target="_blank" class="text-blue-400 hover:text-blue-300 text-[10px] underline font-bold" title="Buka Foto"><i class="fa-solid fa-camera"></i> View</a>` : '<span class="text-slate-600 text-[10px]">-</span>'}
+                ${foto ? `<a href="${foto}" target="_blank" class="text-blue-400 hover:text-blue-300 text-[10px] underline font-bold" title="Buka Foto"><i class="fa-solid fa-camera"></i> View</a>` : '<span class="text-slate-600 text-[10px]">-</span>'}
               </div>
             </td>
           `;
         };
+
+        let deleteButtonCell = isOwner ? `
+          <td class="p-3 text-center">
+            <button onclick="deleteRecord(${originalIndex})" class="bg-red-600 hover:bg-red-500 text-white font-bold w-6 h-6 rounded-lg flex items-center justify-center mx-auto transition" title="Hapus Baris"><i class="fa-solid fa-xmark text-xs"></i></button>
+          </td>
+        ` : '';
 
         tbody.innerHTML += `
           <tr class="hover:bg-slate-750">
@@ -838,9 +835,7 @@
             <td class="p-3 text-emerald-400 font-semibold">${item.jobOrder}</td>
             <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
-            <td class="p-3 text-center">
-              <button onclick="deleteRecord(${originalIndex})" class="bg-red-600 hover:bg-red-500 text-white font-bold w-6 h-6 rounded-lg flex items-center justify-center mx-auto transition" title="Hapus Baris"><i class="fa-solid fa-xmark text-xs"></i></button>
-            </td>
+            ${deleteButtonCell}
           </tr>`;
       });
     }
