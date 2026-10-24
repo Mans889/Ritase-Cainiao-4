@@ -537,7 +537,6 @@
 
       let currentRecord = records.find(r => Number(r.rit) === activeRit);
 
-      // Simpan tahap yang sedang dipilih user saat ini (jika ada) agar tidak ter-reset saat background sync
       let currentSelectedStage = tahapSelect.value;
 
       tahapSelect.innerHTML = "";
@@ -560,13 +559,11 @@
         tahapSelect.appendChild(opt);
       });
 
-      // Jika tahap sebelumnya masih valid dan belum selesai, pertahankan pilihan user
       let isPreviousValid = currentSelectedStage && !Array.from(tahapSelect.options).find(o => o.value === currentSelectedStage && o.disabled);
       
       if (isPreviousValid) {
         tahapSelect.value = currentSelectedStage;
       } else {
-        // Jika belum ada pilihan atau tahap sebelumnya sudah done, arahkan ke tahap pertama yang belum selesai
         let firstAvailable = Array.from(tahapSelect.options).find(o => !o.disabled);
         if (firstAvailable) {
           tahapSelect.value = firstAvailable.value;
@@ -790,7 +787,6 @@
       setDefaultDate();
     });
 
-    // Auto sync background setiap 5 detik TANPA mereset pilihan input form user
     setInterval(() => {
       if (loggedInUser) {
         fetchMasterAndDatabase(false);
@@ -920,7 +916,9 @@
 
       showSuccessModal();
       
-      let existingRecord = databaseData.find(item => item.tanggal === formattedDateDMY && item.vehicle === selectedVehicle && Number(item.rit) === Number(currentActiveRit));
+      // UPDATE DATA LOKAL SECARA INSTAN AGAR DROPDOWN LANGSUNG TERKUNCI (DONE)
+      let existingRecord = databaseData.find(item => String(item.tanggal).trim() === String(formattedDateDMY).trim() && String(item.vehicle).trim() === String(selectedVehicle) && Number(item.rit) === Number(currentActiveRit));
+      
       if (existingRecord) {
         existingRecord[tahapVal] = currentTime;
         existingRecord['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = capturedPhotoData;
@@ -940,9 +938,11 @@
           remarks: payload.remarks
         };
         newRec[tahapVal] = currentTime;
+        newRec['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = capturedPhotoData;
         databaseData.unshift(newRec);
       }
 
+      // Segarkan UI dan dropdown secara instan
       renderDatabaseTable();
       onVehicleOrDateChange();
 
