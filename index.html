@@ -67,7 +67,7 @@
 
       <!-- Tombol Synchronize & Navigasi Tab -->
       <div class="flex items-center space-x-2 flex-wrap justify-center">
-        <button onclick="fetchDatabaseData(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-bold rounded-lg shadow transition flex items-center">
+        <button onclick="fetchDatabaseData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-bold rounded-lg shadow transition flex items-center">
           <i class="fa-solid fa-rotate mr-1.5"></i> Synchronize
         </button>
         <div class="flex items-center space-x-1.5">
@@ -426,7 +426,7 @@
         document.getElementById('currentUserEmail').innerText = foundUser.email;
         document.getElementById('userRoleBadge').innerText = foundUser.role;
         errorMsg.classList.add('hidden');
-        fetchDatabaseData(false); // Ambil data awal TANPA pop-up (silent)
+        fetchDatabaseData(); // Sinkron awal secara silent tanpa pop-up
       } else {
         errorMsg.classList.remove('hidden');
       }
@@ -597,31 +597,28 @@
       document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center";
 
       if (tab === 'db') {
-        fetchDatabaseData(false);
+        fetchDatabaseData();
       }
     }
 
-    // Fungsi fetch data (hanya munculkan pop-up jika parameter showPopup bernilai true, misal saat klik tombol Synchronize manual)
-    async function fetchDatabaseData(showPopup = false) {
+    // FUNGSI FETCH DATA SEKARANG 100% SILENT (TIDAK ADA POPUP SAMA SEKALI SAAT SYNC)
+    async function fetchDatabaseData() {
       try {
         const response = await fetch(GSHEET_API_URL + "?action=getdata");
         const result = await response.json();
         if (result.status === "success") {
           databaseData = result.data;
           renderDatabaseTable();
-          if (showPopup) {
-            showSuccessModal();
-          }
         }
       } catch (err) {
         console.error("Gagal ambil data database:", err);
       }
     }
 
-    // AUTO-SYNC SILENT DI BELAKANG LAYAR TIAP 5 DETIK (DIJAMIN TANPA POP-UP)
+    // AUTO-SYNC SILENT DI BELAKANG LAYAR TIAP 5 DETIK
     setInterval(() => {
       if (loggedInUser) {
-        fetchDatabaseData(false);
+        fetchDatabaseData();
       }
     }, 5000);
 
