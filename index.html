@@ -769,7 +769,18 @@
         const response = await fetch(GSHEET_API_URL + "?action=getdata");
         const result = await response.json();
         if (result.status === "success") {
-          databaseData = result.data || [];
+          let serverData = result.data || [];
+          
+          // AMANKAN EDITED DATA: Jangan timpa row yang sedang diketik user secara lokal
+          serverData.forEach((newItem, idx) => {
+            if (databaseData[idx] && databaseData[idx].jobOrder && databaseData[idx].jobOrder !== 'JO-') {
+              if (newItem.jobOrder === 'JO-' || !newItem.jobOrder) {
+                newItem.jobOrder = databaseData[idx].jobOrder;
+              }
+            }
+          });
+
+          databaseData = serverData;
           
           if (result.master) {
             if (result.master.users && result.master.users.length > 0) {
@@ -1004,8 +1015,17 @@
       capturedPhotoData = null;
     }
 
+    // UPDATE LOKAL SAAT DIKETIK (LIVE TYPING)
+    function updateJobOrderLocal(index, val) {
+      if (databaseData[index]) {
+        databaseData[index].jobOrder = val;
+      }
+    }
+
     async function updateJobOrderInline(index, newJoValue) {
-      databaseData[index].jobOrder = newJoValue.trim() || 'JO-';
+      if (databaseData[index]) {
+        databaseData[index].jobOrder = newJoValue.trim() || 'JO-';
+      }
       const item = databaseData[index];
 
       try {
@@ -1055,7 +1075,6 @@
     }
 
     function renderDatabaseTable() {
-      // PENGAMAN: Jika user sedang fokus mengetik di input Job Order atau search, batalkan render ulang agar tidak ke-refresh
       const activeEl = document.activeElement;
       if (activeEl && (activeEl.id === 'searchInput' || activeEl.classList.contains('job-order-input'))) {
         return;
@@ -1126,7 +1145,7 @@
             ${cellInput(item.finishUnload, item.fotoFinishUnload)}
             <td class="p-3 text-rose-200">${item.unloadingLocation}</td>
             <td class="p-3 text-center">
-              <input type="text" value="${item.jobOrder}" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="job-order-input bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 text-center focus:outline-none focus:border-blue-500">
+              <input type="text" value="${item.jobOrder}" oninput="updateJobOrderLocal(${originalIndex}, this.value)" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="job-order-input bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 text-center focus:outline-none focus:border-blue-500">
             </td>
             <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
