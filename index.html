@@ -48,7 +48,7 @@
       <div class="w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin mx-auto"></div>
       <div>
         <h3 class="text-base font-bold text-white mb-1">Sedang Mengirim Data...</h3>
-        <p class="text-xs text-slate-300">Mohon tunggu sebentar!</p>
+        <p class="text-xs text-slate-300">Mohon tunggu sebentar, data sedang disinkronkan ke Cloud.</p>
       </div>
     </div>
   </div>
@@ -127,7 +127,7 @@
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/60 p-3 sm:p-4 rounded-xl border border-slate-700">
           <div>
-            <label class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-user mr-1"></i> Nama Driver</label>
+            <label class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-user mr-1"></i> Driver</label>
             <select id="driver" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition">
             </select>
           </div>
@@ -183,12 +183,12 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-semibold text-teal-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-warehouse mr-1"></i> Loading Location (Muat)</label>
-              <select id="loadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-teal-200 font-medium focus:outline-none focus:border-blue-500 transition">
+              <select id="loadingLocation" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-teal-200 font-medium focus:outline-none focus:border-blue-500 transition">
               </select>
             </div>
             <div>
               <label class="block text-[11px] font-semibold text-rose-300 uppercase tracking-wider mb-1"><i class="fa-solid fa-location-dot mr-1"></i> Unloading Location (Bongkar)</label>
-              <select id="unloadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-rose-200 font-medium focus:outline-none focus:border-blue-500 transition">
+              <select id="unloadingLocation" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-rose-200 font-medium focus:outline-none focus:border-blue-500 transition">
               </select>
             </div>
           </div>
@@ -207,7 +207,7 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">No. Job Order (Opsional)</label>
+              <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">NO. JOB ORDER (OPSIONAL)</label>
               <input type="text" id="jobOrder" value="JO-" placeholder="Contoh: JO-481176" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-emerald-400 font-semibold focus:outline-none focus:border-blue-500 transition">
             </div>
             <div>
@@ -280,10 +280,10 @@
                 <th class="p-3 whitespace-nowrap text-center">Tipe Unit</th>
                 <th class="p-3 whitespace-nowrap text-center">Rit</th>
                 <th class="p-3 whitespace-nowrap">Loading Loc</th>
-                <th class="p-3 whitespace-nowrap">Arrival Muat</th>
+                <th class="p-3 whitespace-nowrap">Arrival Load</th>
                 <th class="p-3 whitespace-nowrap">Start Load</th>
                 <th class="p-3 whitespace-nowrap">Finish Load</th>
-                <th class="p-3 whitespace-nowrap">Arrival Bongkar</th>
+                <th class="p-3 whitespace-nowrap">Arrival Unload</th>
                 <th class="p-3 whitespace-nowrap">Start Unload</th>
                 <th class="p-3 whitespace-nowrap">Finish Unload</th>
                 <th class="p-3 whitespace-nowrap">Unloading Loc</th>
@@ -327,7 +327,7 @@
           </div>
 
           <div class="space-y-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700">
-            <h4 class="text-[11px] font-bold text-emerald-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-user mr-1.5"></i> NAMA DRIVER</h4>
+            <h4 class="text-[11px] font-bold text-emerald-300 uppercase tracking-wider flex items-center"><i class="fa-solid fa-user mr-1.5"></i> DRIVER</h4>
             <div class="flex items-center space-x-1.5">
               <input type="text" id="newDriverInput" placeholder="Nama driver..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
               <button onclick="addNewMasterItem('driver')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
@@ -525,10 +525,10 @@
       if (!veh) return;
 
       const stages = [
-        { val: "arrivalMuat", label: "Arrival Muat" },
+        { val: "arrivalMuat", label: "Arrival Load" },
         { val: "startLoad", label: "Start Load" },
         { val: "finishLoad", label: "Finish Load" },
-        { val: "arrivalBongkar", label: "Arrival Bongkar" },
+        { val: "arrivalBongkar", label: "Arrival Unload" },
         { val: "startUnload", label: "Start Unload" },
         { val: "finishUnload", label: "Finish Unload" }
       ];
@@ -771,7 +771,6 @@
         if (result.status === "success") {
           let serverData = result.data || [];
           
-          // AMANKAN EDITED DATA: Jangan timpa row yang sedang diketik user secara lokal
           serverData.forEach((newItem, idx) => {
             if (databaseData[idx] && databaseData[idx].jobOrder && databaseData[idx].jobOrder !== 'JO-') {
               if (newItem.jobOrder === 'JO-' || !newItem.jobOrder) {
@@ -931,7 +930,7 @@
     async function handleFormSubmit(event) {
       event.preventDefault();
       if (!capturedPhotoData) {
-        alert("Wajib ambil foto bukti timestamp!");
+        alert("Wajib ambil foto bukti timestamp tahapan!");
         return;
       }
 
@@ -1015,7 +1014,6 @@
       capturedPhotoData = null;
     }
 
-    // UPDATE LOKAL SAAT DIKETIK (LIVE TYPING)
     function updateJobOrderLocal(index, val) {
       if (databaseData[index]) {
         databaseData[index].jobOrder = val;
