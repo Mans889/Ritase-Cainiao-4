@@ -48,7 +48,7 @@
       <div class="w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin mx-auto"></div>
       <div>
         <h3 class="text-base font-bold text-white mb-1">Sedang Mengirim Data...</h3>
-        <p class="text-xs text-slate-300">Mohon tunggu sebentar!</p>
+        <p class="text-xs text-slate-300">Mohon tunggu sebentar, data sedang disinkronkan ke Cloud.</p>
       </div>
     </div>
   </div>
@@ -924,7 +924,6 @@
         return;
       }
 
-      // Tampilkan animasi loading
       document.getElementById('loadingOverlay').classList.remove('hidden');
 
       const rawDate = document.getElementById('tanggalBekerja').value;
@@ -991,7 +990,6 @@
         console.error("Gagal sinkron background:", e);
       }
 
-      // Sembunyikan loading, lalu tampilkan modal sukses
       document.getElementById('loadingOverlay').classList.add('hidden');
       showSuccessModal();
 
@@ -1057,6 +1055,12 @@
     }
 
     function renderDatabaseTable() {
+      // PENGAMAN: Jika user sedang fokus mengetik di input Job Order atau search, batalkan render ulang agar tidak ke-refresh
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.id === 'searchInput' || activeEl.classList.contains('job-order-input'))) {
+        return;
+      }
+
       const tbody = document.getElementById('dbTableBody');
       const searchInputElem = document.getElementById('searchInput');
       const thHeaderAksi = document.getElementById('thHeaderAksi');
@@ -1122,7 +1126,7 @@
             ${cellInput(item.finishUnload, item.fotoFinishUnload)}
             <td class="p-3 text-rose-200">${item.unloadingLocation}</td>
             <td class="p-3 text-center">
-              <input type="text" value="${item.jobOrder}" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 text-center focus:outline-none focus:border-blue-500">
+              <input type="text" value="${item.jobOrder}" onchange="updateJobOrderInline(${originalIndex}, this.value)" class="job-order-input bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-emerald-400 font-semibold w-28 text-center focus:outline-none focus:border-blue-500">
             </td>
             <td class="p-3 font-semibold text-emerald-300">${item.driver || '-'}</td>
             <td class="p-3 text-slate-300">${item.coDriver || '-'}</td>
