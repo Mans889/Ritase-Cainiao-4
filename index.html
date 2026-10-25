@@ -387,6 +387,29 @@
   </main>
 
   <script>
+    // FITUR ANTI INSPECT & KLIK KANAN
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      // Blok F12
+      if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+      }
+      // Blok Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.key === 'i' || e.key === 'j' || e.key === 'c')) {
+        e.preventDefault();
+        return false;
+      }
+      // Blok Ctrl+U (View Source)
+      if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
     const GSHEET_API_URL = "https://script.google.com/macros/s/AKfycbyOP_S4ihvKBKup6MgkcdZk0M6_L_85HT3T3ZPJ2aRNE2WYQYAqIfWKoWoSm0oCx68mTg/exec";
 
     const quotesList = [
