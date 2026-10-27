@@ -393,17 +393,14 @@
     });
 
     document.addEventListener('keydown', function(e) {
-      // Blok F12
       if (e.key === 'F12') {
         e.preventDefault();
         return false;
       }
-      // Blok Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
       if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.key === 'i' || e.key === 'j' || e.key === 'c')) {
         e.preventDefault();
         return false;
       }
-      // Blok Ctrl+U (View Source)
       if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
         e.preventDefault();
         return false;
@@ -630,9 +627,12 @@
       if (!timeStr) return "-";
       let str = String(timeStr).trim();
       if (str.includes("T")) {
-        let timePart = str.split("T")[1];
-        if (timePart) {
-          return timePart.split(".")[0];
+        let d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          let hours = String(d.getHours()).padStart(2, '0');
+          let minutes = String(d.getMinutes()).padStart(2, '0');
+          let seconds = String(d.getSeconds()).padStart(2, '0');
+          return `${hours}:${minutes}:${seconds}`;
         }
       }
       if (str.includes(" ")) {
