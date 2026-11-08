@@ -88,6 +88,7 @@
         <button onclick="fetchMasterAndDatabase(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-md shadow transition flex items-center whitespace-nowrap">
           <i class="fa-solid fa-rotate mr-1"></i> Sync
         </button>
+        <span id="syncStatus" class="text-[9px] text-slate-400 whitespace-nowrap" aria-live="polite"></span>
         <div id="navTabsContainer" class="flex items-center space-x-1">
           <button onclick="switchTab('form')" id="btnTabForm" class="px-2 py-1 text-[10px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center whitespace-nowrap">
             <i class="fa-solid fa-pen-to-square mr-1"></i> Form
@@ -791,49 +792,140 @@
       showSuccessModal();
     }
 
+    let syncInProgress = false;
+    let syncQueued = false;
+
+    function setSyncStatus(text = "", type = "idle") {
+      const el = document.getElementById('syncStatus');
+      if (!el) return;
+      el.innerText = text;
+      el.className = "text-[9px] whitespace-nowrap " + (
+        type === "ok" ? "text-emerald-400" :
+        type === "error" ? "text-rose-400" :
+        type === "sync" ? "text-blue-300" : "text-slate-400"
+      );
+    }
+
+    function snapshotFormState() {
+      const ids = ['driver','coDriver','kategoriHeader','tanggalBekerja','vehicle','tipeUnit','loadingLocation','unloadingLocation','tahap','jobOrder','remarks'];
+      const values = {};
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) values[id] = el.value;
+      });
+      return values;
+    }
+
+    function restoreFormState(values) {
+      if (!values) return;
+      Object.entries(values).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.tagName === 'SELECT') {
+          const exists = Array.from(el.options).some(o => o.value === value && !o.disabled);
+          if (exists) el.value = value;
+        } else {
+          el.value = value;
+        }
+      });
+    }
+
+    function isUserInteracting() {
+      const active = document.activeElement;
+      return !!(
+        active && (
+          active.tagName === 'SELECT' ||
+          active.tagName === 'INPUT' ||
+          active.tagName === 'TEXTAREA' ||
+          active.isContentEditable
+        )
+      ) || !!videoStream;
+    }
+
+    function arraysEqual(a, b) {
+      if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+      return a.every((v, i) => JSON.stringify(v) === JSON.stringify(b[i]));
+    }
+
+    function applyMasterDataQuietly(master) {
+      if (!master) return false;
+      let changed = false;
+      if (master.users && master.users.length > 0) {
+        const next = master.users.map(item => {
+          const parts = item.split("|");
+          return { email: parts[0].trim(), role: (parts[1] || "Owner").trim() };
+        });
+        if (!arraysEqual(userList, next)) { userList = next; changed = true; }
+      }
+      const pairs = [
+        ['drivers', () => driverList, v => driverList = v],
+        ['coDrivers', () => coDriverList, v => coDriverList = v],
+        ['kategori', () => kategoriHeaderList, v => kategoriHeaderList = v],
+        ['vehicles', () => vehicleList, v => vehicleList = v],
+        ['loading', () => loadingLocations, v => loadingLocations = v],
+        ['unloading', () => unloadingLocations, v => unloadingLocations = v]
+      ];
+      pairs.forEach(([key, get, set]) => {
+        if (master[key] && master[key].length > 0 && !arraysEqual(get(), master[key])) {
+          set(master[key]); changed = true;
+        }
+      });
+      return changed;
+    }
+
     async function fetchMasterAndDatabase(isFull = false) {
+      if (syncInProgress) {
+        syncQueued = syncQueued || isFull;
+        return;
+      }
+      syncInProgress = true;
+      const formState = snapshotFormState();
+      const interactingAtStart = isUserInteracting();
+      setSyncStatus("Sync...", "sync");
       try {
-        const response = await fetch(GSHEET_API_URL + "?action=getdata");
+        const response = await fetch(GSHEET_API_URL + "?action=getdata", { cache: "no-store" });
         const result = await response.json();
         if (result.status === "success") {
-          let serverData = result.data || [];
-          
+          const serverData = result.data || [];
           serverData.forEach((newItem, idx) => {
             if (databaseData[idx] && databaseData[idx].jobOrder && databaseData[idx].jobOrder !== 'JO-') {
-              if (newItem.jobOrder === 'JO-' || !newItem.jobOrder) {
-                newItem.jobOrder = databaseData[idx].jobOrder;
-              }
+              if (newItem.jobOrder === 'JO-' || !newItem.jobOrder) newItem.jobOrder = databaseData[idx].jobOrder;
             }
           });
-
+          const dbChanged = JSON.stringify(databaseData) !== JSON.stringify(serverData);
           databaseData = serverData;
-          
-          if (result.master) {
-            if (result.master.users && result.master.users.length > 0) {
-              userList = result.master.users.map(item => {
-                let parts = item.split("|");
-                return { email: parts[0].trim(), role: (parts[1] || "Owner").trim() };
-              });
-            }
-            if (result.master.drivers && result.master.drivers.length > 0) driverList = result.master.drivers;
-            if (result.master.coDrivers && result.master.coDrivers.length > 0) coDriverList = result.master.coDrivers;
-            if (result.master.kategori && result.master.kategori.length > 0) kategoriHeaderList = result.master.kategori;
-            if (result.master.vehicles && result.master.vehicles.length > 0) vehicleList = result.master.vehicles;
-            if (result.master.loading && result.master.loading.length > 0) loadingLocations = result.master.loading;
-            if (result.master.unloading && result.master.unloading.length > 0) unloadingLocations = result.master.unloading;
+          const masterChanged = applyMasterDataQuietly(result.master);
+
+          // Jangan sentuh dropdown ketika user sedang berinteraksi.
+          if (isFull && !interactingAtStart && !isUserInteracting()) {
+            renderAppUI(true);
+            restoreFormState(formState);
+            onVehicleOrDateChange();
+          } else if (masterChanged && !isUserInteracting()) {
+            renderAppUI(false);
+            restoreFormState(formState);
+            onVehicleOrDateChange();
+          } else if (!isUserInteracting()) {
+            onVehicleOrDateChange();
           }
 
-          renderAppUI(isFull);
-          renderDatabaseTable();
-          if (loggedInUser) {
-            applyRolePermissions();
-          }
+          if (dbChanged && !isUserInteracting()) renderDatabaseTable();
+          if (loggedInUser) applyRolePermissions();
+          setSyncStatus("Tersinkron", "ok");
+          setTimeout(() => setSyncStatus("", "idle"), 1200);
         }
       } catch (err) {
         console.error("Gagal sinkron data cloud:", err);
+        setSyncStatus("Sync gagal", "error");
+      } finally {
+        syncInProgress = false;
+        if (syncQueued) {
+          const full = syncQueued;
+          syncQueued = false;
+          setTimeout(() => fetchMasterAndDatabase(full), 0);
+        }
       }
     }
-
     window.addEventListener('DOMContentLoaded', async () => {
       const emailInput = document.getElementById('loginEmailInput');
       const subtitle = document.getElementById('loginSubtitle');
