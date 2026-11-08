@@ -589,10 +589,14 @@
           opt.style.color = "#64748b";
           opt.style.backgroundColor = "#020617";
         } else {
+          // Hanya step pertama yang belum selesai yang boleh dipilih.
+          // Step setelahnya dikunci agar proses wajib berurutan.
+          const firstPendingIndex = stages.findIndex(s => !(currentRecord && currentRecord[s.val] && currentRecord[s.val].toString().trim() !== ""));
+          const currentIndex = stages.findIndex(s => s.val === st.val);
           opt.innerText = st.label;
-          opt.disabled = false;
-          opt.style.color = "#ffffff";
-          opt.style.backgroundColor = "#0f172a";
+          opt.disabled = currentIndex !== firstPendingIndex;
+          opt.style.color = opt.disabled ? "#64748b" : "#ffffff";
+          opt.style.backgroundColor = opt.disabled ? "#020617" : "#0f172a";
         }
         tahapSelect.appendChild(opt);
       });
@@ -857,7 +861,16 @@
 
     setInterval(() => {
       if (loggedInUser) {
-        fetchMasterAndDatabase(false);
+        // Sinkronisasi background tidak dilakukan saat user sedang mengisi form,
+        // membuka select, textarea, atau menggunakan kamera agar UI tidak berkedip/reset.
+        const active = document.activeElement;
+        const isFormBusy = !!(
+          active && document.getElementById('ritaseForm')?.contains(active)
+        ) || !!videoStream || !!capturedPhotoData;
+
+        if (!isFormBusy) {
+          fetchMasterAndDatabase(false);
+        }
       }
     }, 5000);
 
@@ -964,6 +977,24 @@
       const formattedDateDMY = `${parts[2]}-${parts[1]}-${parts[0]}`;
       const tahapVal = document.getElementById('tahap').value;
       const selectedVehicle = document.getElementById('vehicle').value;
+
+      // Validasi urutan proses saat submit: tidak boleh bypass step yang belum selesai.
+      const processStages = ["arrivalMuat", "startLoad", "finishLoad", "arrivalBongkar", "startUnload", "finishUnload"];
+      const activeRecordForValidation = databaseData.find(item =>
+        String(item.tanggal).trim() === String(formattedDateDMY).trim() &&
+        String(item.vehicle).trim() === String(selectedVehicle).trim() &&
+        Number(item.rit) === Number(currentActiveRit)
+      );
+      const firstPendingStage = processStages.find(stage =>
+        !(activeRecordForValidation && activeRecordForValidation[stage] && activeRecordForValidation[stage].toString().trim() !== "")
+      ) || "arrivalMuat";
+
+      if (tahapVal !== firstPendingStage) {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        alert("Process harus diselesaikan berurutan. Selesaikan step yang sedang berjalan terlebih dahulu!");
+        onVehicleOrDateChange();
+        return;
+      }
       const currentTime = document.getElementById('waktuOtomatis').value;
       const jobOrderVal = document.getElementById('jobOrder').value.trim() || 'JO-';
 
